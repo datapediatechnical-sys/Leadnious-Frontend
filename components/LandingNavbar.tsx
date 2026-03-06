@@ -158,7 +158,7 @@ export default function LandingNavbar() {
                     </div>
                   </Link>
 
-                  <Link
+                  {/* <Link
                     href="/enterprise/insurance"
                     className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-linear-to-br hover:from-orange-50 hover:to-red-50 dark:hover:from-orange-900/40 dark:hover:to-red-900/40 transition-all duration-300 group/item border border-transparent hover:border-orange-100 dark:hover:border-orange-800"
                   >
@@ -168,7 +168,7 @@ export default function LandingNavbar() {
                     <div className="text-sm font-bold text-foreground">
                       Insurance
                     </div>
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>
