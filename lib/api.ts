@@ -70,7 +70,7 @@ export async function apiRequest<T>(
                 // No refresh token, redirect to login
                 if (typeof window !== 'undefined') {
                     localStorage.clear();
-                    window.location.href = '/auth/login';
+                    window.location.href = '/login';
                 }
                 return { error: { detail: 'Session expired', status: 401 } };
             }
@@ -98,7 +98,7 @@ export async function apiRequest<T>(
                         isRefreshing = false;
                         if (typeof window !== 'undefined') {
                             localStorage.clear();
-                            window.location.href = '/auth/login';
+                            window.location.href = '/login';
                         }
                         return { error: { detail: 'Session expired', status: 401 } };
                     }

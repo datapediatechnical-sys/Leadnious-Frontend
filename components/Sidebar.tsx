@@ -268,14 +268,14 @@ export default function Sidebar() {
         {/* Affiliate / Program */}
         <div className="mb-3 flex flex-col gap-1">
           <Link
-            href="/dashboard/pricing"
+            href="/pricing"
             className="w-full rounded-lg bg-sidebar-accent/50 px-3 py-2 text-left text-[13px] font-semibold text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             Pricing
           </Link>
 
           <Link
-            href="/dashboard/affiliate-program"
+            href="/affiliate-program"
             className="w-full rounded-lg bg-sidebar-accent/50 px-3 py-2 text-left text-[13px] font-semibold text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             Affiliate Program
