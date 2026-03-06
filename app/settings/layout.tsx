@@ -46,13 +46,13 @@ export default function SettingsLayout({
                         <NavItem href="/settings/linkedin" label="LinkedIn Account" active={isActive("/settings/linkedin")} icon={<Linkedin size={18} />} />
                         <NavItem href="/settings/activity" label="Account activity" active={isActive("/settings/activity")} icon={<Activity size={18} />} />
                         <NavItem href="/settings/email" label="Email accounts" active={isActive("/settings/email")} icon={<Mail size={18} />} />
-                        <NavItem
+                        {/* <NavItem
                             href="/settings/agent"
                             label="AI Call Agent Account"
                             active={isActive("/settings/agent")}
                             icon={<Bot size={18} />}
                             badge="New Agent"
-                        />
+                        /> */}
                         <NavItem href="/settings/invoices" label="Invoices" active={isActive("/settings/invoices")} icon={<FileText size={18} />} />
                         <NavItem href="/settings/import" label="Import history" active={isActive("/settings/import")} icon={<List size={18} />} />
                     </nav>
