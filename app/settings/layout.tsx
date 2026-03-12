@@ -47,9 +47,9 @@ export default function SettingsLayout({
                         <NavItem href="/settings/activity" label="Account activity" active={isActive("/settings/activity")} icon={<Activity size={18} />} />
                         <NavItem href="/settings/email" label="Email accounts" active={isActive("/settings/email")} icon={<Mail size={18} />} />
                         <NavItem
-                            href="/settings/call-bot"
+                            href="/settings/agent"
                             label="AI Call Bot"
-                            active={isActive("/settings/call-bot")}
+                            active={isActive("/settings/agent")}
                             icon={<Bot size={18} />}
                             badge="Coming Soon"
                         />

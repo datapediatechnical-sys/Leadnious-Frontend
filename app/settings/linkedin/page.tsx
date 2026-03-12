@@ -42,6 +42,12 @@ export default function LinkedInSettingsPage() {
 
     useEffect(() => {
         fetchLinkedInStatus();
+
+        // Sync with extension if available
+        const token = localStorage.getItem("token");
+        if (token) {
+            window.postMessage({ type: "LEAD_GENIUS_CONNECT", payload: { token } }, "*");
+        }
     }, []);
 
     const fetchLinkedInStatus = async () => {

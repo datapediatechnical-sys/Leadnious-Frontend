@@ -33,7 +33,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                const silenceStrings = ['platform-telemetry', 'li/apfcDf', 'MutationObserver', 'visitor.publishDestinations'];
+                const silenceStrings = ['platform-telemetry', 'li/apfcDf', 'MutationObserver', 'visitor.publishDestinations', 'WebGL context', 'WebGL contexts'];
                 
                 function shouldSilence(args) {
                   try {
