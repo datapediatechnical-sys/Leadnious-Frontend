@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Plus,
   Database,
-  FileCheck
+  FileCheck,
+  Bot
 } from "lucide-react";
 import {
   BarChart,
@@ -235,6 +236,17 @@ export default function DashboardPage() {
               action=">"
             />
           </Link>
+
+          <Link href="/dashboard/call-bot" className="contents">
+            <ActionCard
+              icon={<Bot className="h-5 w-5 text-blue-500" />}
+              iconBg="bg-blue-500/10"
+              title="AI Call Bot"
+              desc="Automated voice outreach."
+              action=">"
+              badge="New"
+            />
+          </Link>
         </div>
 
         {/* Email Outreach Resource Pool */}
@@ -430,7 +442,7 @@ export default function DashboardPage() {
 
 // --- Components ---
 
-function ActionCard({ icon, iconBg, title, desc, action, active }: any) {
+function ActionCard({ icon, iconBg, title, desc, action, active, badge }: any) {
   return (
     <div className={`group cursor-pointer rounded-xl border p-4 transition-all ${active
       ? 'border-blue-600 bg-blue-600 border-none'
@@ -441,7 +453,14 @@ function ActionCard({ icon, iconBg, title, desc, action, active }: any) {
           {icon}
         </div>
         <div className="flex-1">
-          <h4 className={`text-sm font-bold ${active ? 'text-white' : 'text-card-foreground'}`}>{title}</h4>
+          <div className="flex items-center gap-2">
+            <h4 className={`text-sm font-bold ${active ? 'text-white' : 'text-card-foreground'}`}>{title}</h4>
+            {badge && (
+              <span className="rounded-full bg-blue-500 px-1.5 py-0.5 text-[8px] font-bold text-white uppercase tracking-tighter">
+                {badge}
+              </span>
+            )}
+          </div>
           <p className={`mt-1 text-xs ${active ? 'text-blue-100' : 'text-muted-foreground'}`}>{desc}</p>
         </div>
         <div className={`flex h-6 w-6 items-center justify-center rounded-full ${active ? 'bg-white/20 text-white' : 'text-muted-foreground/50'}`}>
