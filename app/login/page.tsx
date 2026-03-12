@@ -75,7 +75,8 @@ export default function LoginPage() {
                         <button
                             type="button"
                             onClick={() => {
-                                toast.info("LinkedIn login coming soon");
+                                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lead-gen-backend-dcxf.onrender.com';
+                                window.location.href = `${API_URL}/api/auth/linkedin/login`;
                             }}
                             className="flex h-11 items-center justify-center gap-2 rounded-xl border border-input bg-background text-sm font-semibold text-foreground hover:bg-accent transition-colors"
                         >
