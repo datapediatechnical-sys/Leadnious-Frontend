@@ -202,40 +202,43 @@ export default function DashboardPage() {
       {/* --- Main Grid --- */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
 
-        {/* Quick Actions (Left Col) */}
-        <div className="flex flex-col gap-4 lg:col-span-3">
-          <h3 className="text-sm font-bold text-foreground">Quick Actions</h3>
+        {/* Quick Actions (Horizontal Row) */}
+        <div className="lg:col-span-12">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-foreground">Quick Actions</h3>
+          </div>
+          <div className="flex flex-row gap-6 w-full">
+            <Link href="/dashboard/extraction" className="flex-1 min-w-0">
+              <ActionCard
+                icon={<CloudLightning className="h-5 w-5 text-white" />}
+                iconBg="bg-blue-600"
+                title="Start Extraction"
+                desc="Import list or scrape URL"
+                action=">"
+                active
+              />
+            </Link>
 
-          <Link href="/dashboard/extraction" className="contents">
-            <ActionCard
-              icon={<CloudLightning className="h-5 w-5 text-white" />}
-              iconBg="bg-blue-600"
-              title="Start Extraction"
-              desc="Import list or scrape URL to find prospects."
-              action=">"
-              active
-            />
-          </Link>
+            <Link href="/dashboard/scoring" className="flex-1 min-w-0">
+              <ActionCard
+                icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+                iconBg="bg-emerald-500/10"
+                title="View Scored Leads"
+                desc={`Review ${stats?.qualified_leads || 0} leads.`}
+                action=">"
+              />
+            </Link>
 
-          <Link href="/dashboard/scoring" className="contents">
-            <ActionCard
-              icon={<CheckCircle2 className="h-5 w-5 text-emerald-500" />}
-              iconBg="bg-emerald-500/10"
-              title="View Scored Leads"
-              desc={`Review ${stats?.qualified_leads || 0} high-intent leads pending.`}
-              action=">"
-            />
-          </Link>
-
-          <Link href="/dashboard/campaigns/create?template=invitation" className="contents">
-            <ActionCard
-              icon={<Rocket className="h-5 w-5 text-purple-500" />}
-              iconBg="bg-purple-500/10"
-              title="Launch Campaign"
-              desc="Select template and target audience."
-              action=">"
-            />
-          </Link>
+            <Link href="/dashboard/campaigns/create?template=invitation" className="flex-1 min-w-0">
+              <ActionCard
+                icon={<Rocket className="h-5 w-5 text-purple-500" />}
+                iconBg="bg-purple-500/10"
+                title="Launch Campaign"
+                desc="Select template & audience."
+                action=">"
+              />
+            </Link>
+          </div>
         </div>
 
         {/* Email Outreach Resource Pool */}
