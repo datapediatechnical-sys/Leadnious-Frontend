@@ -49,31 +49,33 @@ export default function RootLayout({
                   'Permissions policy violation',
                   'Self-XSS',
                   'attackers to impersonate you',
-                  'Do not enter or paste code'
+                  'Do not enter or paste code',
+                  'permissions policy',
+                  'violation'
                 ];
                 
                 function shouldSilence(args) {
                   try {
                     return args.some(arg => {
+                      if (!arg) return false;
                       const str = String(arg).toLowerCase();
                       return silenceStrings.some(s => str.includes(s.toLowerCase()));
                     });
                   } catch (e) { return false; }
                 }
 
-                // Intercept console.error
-                const origError = console.error;
-                console.error = function(...args) {
-                  if (shouldSilence(args)) return;
-                  origError.apply(console, args);
-                };
-                
-                // Intercept console.warn
-                const origWarn = console.warn;
-                console.warn = function(...args) {
-                  if (shouldSilence(args)) return;
-                  origWarn.apply(console, args);
-                };
+                ['log', 'warn', 'error', 'info', 'debug', 'dir', 'table', 'trace'].forEach(method => {
+                  const orig = console[method];
+                  if (typeof orig === 'function') {
+                    console[method] = function(...args) {
+                      if (shouldSilence(args)) return;
+                      orig.apply(console, args);
+                    };
+                  }
+                });
+
+                setTimeout(() => console.clear(), 100);
+                setTimeout(() => console.clear(), 500);
 
                 // Catch uncaught exceptions
                 window.addEventListener('error', function(e) {
