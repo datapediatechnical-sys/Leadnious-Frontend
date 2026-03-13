@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown, AtSign, PenTool, MoreHorizontal, Plus, Mail, Server, Loader2, Trash2 } from "lucide-react";
+import { Bell, ChevronDown, AtSign, PenTool, MoreHorizontal, Plus, Mail, Server as ServerIcon, Loader2, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -277,7 +277,7 @@ export default function EmailSettingsPage() {
                                             className="flex items-center gap-6 p-8 rounded-[32px] border-2 border-slate-50 bg-slate-50/30 hover:border-indigo-500/20 hover:bg-indigo-500/5 transition-all group col-span-2 text-left shadow-sm"
                                         >
                                             <div className="h-16 w-16 rounded-3xl bg-white shadow-sm grid place-items-center group-hover:scale-110 group-hover:shadow-md transition-all">
-                                                <Server size={32} className="text-[#6366f1]" />
+                                                <ServerIcon size={32} className="text-[#6366f1]" />
                                             </div>
                                             <div className="flex-1">
                                                 <span className="block font-bold text-[#0f172a] text-xl mb-1">Custom SMTP / IMAP</span>

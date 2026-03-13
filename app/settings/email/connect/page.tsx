@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, X, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, CheckCircle2, Server } from "lucide-react";
+import { ChevronLeft, X, Mail, Eye, EyeOff, ChevronDown, ChevronUp, Loader2, CheckCircle2, Server as ServerIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -182,7 +182,7 @@ export default function ConnectEmailPage() {
                                 <label className="text-[15px] font-bold text-slate-600 ml-1">Password*</label>
                                 <div className="relative">
                                     <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
-                                        <Server size={18} className="opacity-50" /> {/* Symbolizing a secure server/lock */}
+                                        <ServerIcon size={18} className="opacity-50" /> {/* Symbolizing a secure server/lock */}
                                     </div>
                                     <input
                                         required
