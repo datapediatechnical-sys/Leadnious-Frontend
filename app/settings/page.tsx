@@ -173,6 +173,30 @@ export default function SettingsPage() {
         }
     };
 
+    const handleUpdateEmail = async () => {
+        if (!email || !email.includes('@')) {
+            toast.error("Please enter a valid email address");
+            return;
+        }
+        setIsSaving(true);
+        try {
+            const res = await api.patch("/api/users/me", {
+                email: email
+            });
+
+            if (res.error) {
+                toast.error(res.error.detail || "Failed to update email");
+            } else {
+                toast.success("Primary email updated successfully!");
+                await refreshUser();
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleSaveProductInfo = async () => {
         if (!orgId) return;
         setIsSaving(true);
@@ -397,12 +421,16 @@ export default function SettingsPage() {
                             <input
                                 type="text"
                                 value={email}
-                                readOnly
-                                className="w-full rounded-2xl border border-input bg-background/50 px-5 py-4 text-sm text-muted-foreground outline-none cursor-not-allowed font-medium"
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full rounded-2xl border border-input bg-background px-5 py-4 text-sm text-foreground outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all font-medium"
                             />
                         </div>
-                        <button className="rounded-2xl bg-secondary px-8 py-4 text-xs font-black uppercase tracking-widest text-muted-foreground cursor-not-allowed border border-border/50">
-                            Locked
+                        <button 
+                            onClick={handleUpdateEmail}
+                            disabled={isSaving}
+                            className="rounded-2xl bg-blue-600 px-8 py-4 text-xs font-black uppercase tracking-widest text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                        >
+                            {isSaving ? "Updating..." : "Update Email"}
                         </button>
                     </div>
                 </div>
