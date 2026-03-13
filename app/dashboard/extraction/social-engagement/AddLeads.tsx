@@ -34,7 +34,7 @@ interface OrgItem {
 export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; onSuccess?: () => void }) {
     const [step, setStep] = useState(1);
     const [selected, setSelected] = useState<string>("basic-search");
-    const [url, setUrl] = useState("https://www.linkedin.com/search/results/people/?keywords=2026%2");
+    const [url, setUrl] = useState("");
     const [profileCount, setProfileCount] = useState<"max" | "custom">("custom");
     const [customCount, setCustomCount] = useState(100);
 
@@ -458,6 +458,10 @@ export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; 
                                             type="text"
                                             value={url}
                                             onChange={(e) => setUrl(e.target.value)}
+                                            placeholder={selected === 'linkedin-post' 
+                                                ? "https://www.linkedin.com/posts/username_post-id" 
+                                                : "https://www.linkedin.com/search/results/people/?keywords=ceo"
+                                            }
                                             className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm text-foreground placeholder-muted-foreground focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
                                         />
                                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500">
