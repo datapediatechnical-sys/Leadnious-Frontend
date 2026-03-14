@@ -17,6 +17,9 @@ interface LinkedInMessagingProps {
     leadId: string;
     leadName: string;
     linkedinUrl: string;
+    leadCompany?: string;
+    leadTitle?: string;
+    leadEmail?: string;
     onMessageSent?: () => void;
     onClose?: () => void;
 }
@@ -30,6 +33,9 @@ export default function LinkedInMessaging({
     leadId,
     leadName,
     linkedinUrl,
+    leadCompany,
+    leadTitle,
+    leadEmail,
     onMessageSent,
     onClose
 }: LinkedInMessagingProps) {
@@ -37,6 +43,32 @@ export default function LinkedInMessaging({
     const [messageType, setMessageType] = useState<"inmail" | "connection">("inmail");
     const [sendMethod, setSendMethod] = useState<"api" | "extension">("api");
     const [isSending, setIsSending] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+
+    // Personalize the message preview with actual lead data
+    const personalizePreview = (template: string) => {
+        const name = leadName || "";
+        const parts = name.split(" ");
+        const firstName = parts[0] || "";
+        const lastName = parts.slice(1).join(" ") || "";
+
+        return template
+            .replace(/\{\{name\}\}/g, name)
+            .replace(/\{\{first_name\}\}/g, firstName)
+            .replace(/\{\{last_name\}\}/g, lastName)
+            .replace(/\{\{company\}\}/g, leadCompany || "")
+            .replace(/\{\{title\}\}/g, leadTitle || "")
+            .replace(/\{\{email\}\}/g, leadEmail || "")
+            .replace(/\{\{location\}\}/g, "")
+            .replace(/\{\{industry\}\}/g, "");
+    };
+
+    const insertVariable = (variable: string) => {
+        setMessage(prev => prev + variable);
+    };
+
+    const hasVariables = message.includes("{{");
+    const previewText = personalizePreview(message);
 
     const handleSend = async () => {
         if (!message.trim()) {
@@ -222,19 +254,52 @@ export default function LinkedInMessaging({
                     </div>
                 </div>
 
-                {/* Variables Info */}
+                {/* Variables - Clickable chips */}
                 <div className="p-4 rounded-lg bg-muted/50 border border-border">
-                    <p className="text-xs font-semibold text-foreground mb-2">Available Variables:</p>
+                    <p className="text-xs font-semibold text-foreground mb-2">Click to insert variables:</p>
                     <div className="flex flex-wrap gap-2">
-                        <code className="px-2 py-1 rounded bg-background text-xs">{'{{name}}'}</code>
-                        <code className="px-2 py-1 rounded bg-background text-xs">{'{{first_name}}'}</code>
-                        <code className="px-2 py-1 rounded bg-background text-xs">{'{{company}}'}</code>
-                        <code className="px-2 py-1 rounded bg-background text-xs">{'{{title}}'}</code>
+                        {[
+                            { tag: "{{first_name}}", label: "First Name", example: leadName?.split(" ")[0] },
+                            { tag: "{{name}}", label: "Full Name", example: leadName },
+                            { tag: "{{company}}", label: "Company", example: leadCompany },
+                            { tag: "{{title}}", label: "Title", example: leadTitle },
+                            { tag: "{{last_name}}", label: "Last Name", example: leadName?.split(" ").slice(1).join(" ") },
+                            { tag: "{{email}}", label: "Email", example: leadEmail },
+                        ].map(v => (
+                            <button
+                                key={v.tag}
+                                onClick={() => insertVariable(v.tag)}
+                                className="group px-2.5 py-1.5 rounded-md bg-background text-xs border border-border hover:border-blue-500 hover:bg-blue-500/5 transition-colors cursor-pointer"
+                                title={v.example ? `Example: ${v.example}` : `No data for ${v.label}`}
+                            >
+                                <span className="text-blue-600 dark:text-blue-400 font-mono">{v.tag}</span>
+                                {v.example && (
+                                    <span className="ml-1.5 text-muted-foreground group-hover:text-foreground">→ {v.example}</span>
+                                )}
+                            </button>
+                        ))}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                        Variables will be automatically replaced with lead data when sending
-                    </p>
                 </div>
+
+                {/* Live Preview */}
+                {hasVariables && message.trim() && (
+                    <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03] overflow-hidden">
+                        <button
+                            onClick={() => setShowPreview(!showPreview)}
+                            className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-500/5 transition-colors"
+                        >
+                            <span>📨 Preview for {leadName}</span>
+                            <span>{showPreview ? "▲ Hide" : "▼ Show"}</span>
+                        </button>
+                        {showPreview && (
+                            <div className="px-4 pb-4">
+                                <div className="p-3 rounded-lg bg-background border border-border text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                    {previewText}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Footer */}

@@ -31,7 +31,10 @@ export default function SalesNavigator() {
                 </div>
             </div>
 
-            <Button className="bg-[#0077b5] hover:bg-[#006396] text-white px-8 h-12 rounded-xl shadow-lg shadow-[#0077b5]/20">
+            <Button 
+                onClick={() => window.open('https://www.linkedin.com/sales', '_blank')}
+                className="bg-[#0077b5] hover:bg-[#006396] text-white px-8 h-12 rounded-xl shadow-lg shadow-[#0077b5]/20"
+            >
                 Open Sales Navigator
                 <ExternalLink className="ml-2 h-4 w-4" />
             </Button>

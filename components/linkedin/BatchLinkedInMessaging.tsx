@@ -17,6 +17,7 @@ interface Lead {
     name?: string | null;
     company?: string;
     title?: string;
+    email?: string;
     linkedin_url?: string;
 }
 
@@ -253,6 +254,24 @@ export default function BatchLinkedInMessaging({
         handleUpdateTemplate(t.id, t.content + variable);
     };
 
+    // Personalize template for preview using first lead's data
+    const personalizePreview = (template: string, lead: Lead) => {
+        const name = lead.name || "";
+        const parts = (name || "").split(" ");
+        const firstName = parts[0] || "";
+        const lastName = parts.slice(1).join(" ") || "";
+
+        return template
+            .replace(/\{\{name\}\}/g, name)
+            .replace(/\{\{first_name\}\}/g, firstName)
+            .replace(/\{\{last_name\}\}/g, lastName)
+            .replace(/\{\{company\}\}/g, lead.company || "")
+            .replace(/\{\{title\}\}/g, lead.title || "")
+            .replace(/\{\{email\}\}/g, lead.email || "")
+            .replace(/\{\{location\}\}/g, "")
+            .replace(/\{\{industry\}\}/g, "");
+    };
+
     return (
         <div className="flex flex-col h-full max-h-[90vh]">
             <DialogHeader className="sr-only">
@@ -459,9 +478,9 @@ export default function BatchLinkedInMessaging({
 
                                                     {/* Variables */}
                                                     <div className="cursor-default">
-                                                        <p className="text-xs text-muted-foreground mb-2">Insert Variables:</p>
+                                                        <p className="text-xs text-muted-foreground mb-2">Click to insert:</p>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {["{{first_name}}", "{{name}}", "{{company}}", "{{title}}"].map(v => (
+                                                            {["{{first_name}}", "{{name}}", "{{company}}", "{{title}}", "{{last_name}}", "{{email}}"].map(v => (
                                                                 <button
                                                                     key={v}
                                                                     onClick={(e) => { e.stopPropagation(); insertVariable(v); }}
@@ -473,6 +492,27 @@ export default function BatchLinkedInMessaging({
                                                             ))}
                                                         </div>
                                                     </div>
+
+                                                    {/* Live Preview for first leads */}
+                                                    {template.content.includes("{{") && template.content.trim() && leadsWithLinkedIn.length > 0 && (
+                                                        <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.03] overflow-hidden">
+                                                            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 border-b border-blue-500/10">
+                                                                📨 Live Preview (first {Math.min(3, leadsWithLinkedIn.length)} leads)
+                                                            </div>
+                                                            <div className="divide-y divide-border max-h-40 overflow-y-auto">
+                                                                {leadsWithLinkedIn.slice(0, 3).map((lead, pIdx) => (
+                                                                    <div key={lead.id} className="px-3 py-2.5">
+                                                                        <div className="text-[10px] font-bold text-muted-foreground mb-1">
+                                                                            → {lead.name || "Unknown"}
+                                                                        </div>
+                                                                        <div className="text-xs text-foreground whitespace-pre-wrap leading-relaxed line-clamp-3">
+                                                                            {personalizePreview(template.content, lead)}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     {/* Action Buttons internal to card */}
                                                     <div className="pt-2 flex gap-3">

@@ -25,8 +25,11 @@ interface LinkedInCredential {
 interface LinkedInStatus {
     credentials: LinkedInCredential[];
     using_personal: boolean;
-    has_personal: boolean;
-    has_organization: boolean;
+    personal_connected: boolean;
+    personal_profile_name?: string;
+    org_connected: boolean;
+    org_profile_name?: string;
+    has_sales_navigator: boolean;
 }
 
 export default function LinkedInSettingsPage() {

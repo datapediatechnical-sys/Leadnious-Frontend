@@ -38,6 +38,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { KanbanBoard, Lead } from "@/components/crm/KanbanBoard";
+import ManualLeadEntry from "@/components/extraction/ManualLeadEntry";
 
 
 interface Campaign {
@@ -458,41 +459,6 @@ export default function CRMPage() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                        <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                                <DialogTitle>Add New Lead</DialogTitle>
-                                <DialogDescription>
-                                    Add a new prospect to your pipeline. LinkedIn URL is required for enrichment.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="name" className="text-right">Name *</Label>
-                                    <Input id="name" value={newLead.name} onChange={e => setNewLead({ ...newLead, name: e.target.value })} className="col-span-3" />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="linkedin" className="text-right">LinkedIn *</Label>
-                                    <Input id="linkedin" value={newLead.linkedin_url} onChange={e => setNewLead({ ...newLead, linkedin_url: e.target.value })} className="col-span-3" placeholder="https://linkedin.com/in/..." />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="email" className="text-right">Email</Label>
-                                    <Input id="email" value={newLead.email} onChange={e => setNewLead({ ...newLead, email: e.target.value })} className="col-span-3" />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="company" className="text-right">Company</Label>
-                                    <Input id="company" value={newLead.company} onChange={e => setNewLead({ ...newLead, company: e.target.value })} className="col-span-3" />
-                                </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="title" className="text-right">Title</Label>
-                                    <Input id="title" value={newLead.title} onChange={e => setNewLead({ ...newLead, title: e.target.value })} className="col-span-3" />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button onClick={handleCreateLead}>Save Lead</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
                 </div>
             </div>
 
@@ -828,6 +794,9 @@ export default function CRMPage() {
                             leadId={linkedInModalLead.id}
                             leadName={linkedInModalLead.name || "Unknown"}
                             linkedinUrl={linkedInModalLead.linkedin_url!}
+                            leadCompany={linkedInModalLead.company}
+                            leadTitle={linkedInModalLead.title}
+                            leadEmail={linkedInModalLead.email}
                             onMessageSent={() => {
                                 fetchLeads();
                                 setLinkedInModalOpen(false);
@@ -886,6 +855,24 @@ export default function CRMPage() {
                         onCancel={() => {
                             setBatchEmailModalOpen(false);
                         }}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Lead Modal */}
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Add New Lead</DialogTitle>
+                        <DialogDescription>
+                            Add a new prospect to your pipeline. LinkedIn URL is highly recommended for enrichment.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ManualLeadEntry 
+                        onSuccess={() => {
+                            setIsCreateOpen(false);
+                            fetchLeads();
+                        }} 
                     />
                 </DialogContent>
             </Dialog>

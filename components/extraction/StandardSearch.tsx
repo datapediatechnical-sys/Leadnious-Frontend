@@ -19,14 +19,28 @@ import {
 
 export default function StandardSearch() {
     const [isLoading, setIsLoading] = useState(false);
+    const [keywords, setKeywords] = useState("");
+    const [jobTitle, setJobTitle] = useState("");
+    const [location, setLocation] = useState("");
+    const [industry, setIndustry] = useState("");
     
     const handleSearch = () => {
         setIsLoading(true);
-        // Simulate search for now as backend endpoint might not be ready for boolean search
-        setTimeout(() => {
-            setIsLoading(false);
-            toast.info("Search initiated. Results will be synced via the extension.");
-        }, 1500);
+        
+        // Construct a powerful LinkedIn search URL
+        // LinkedIn uses 'keywords' for general search, but we can also use specific filters if we know them
+        // For standard search, keywords= is the most reliable way to inject terms
+        let searchQuery = keywords;
+        if (jobTitle) searchQuery += ` "${jobTitle}"`;
+        if (location) searchQuery += ` "${location}"`;
+        if (industry) searchQuery += ` "${industry}"`;
+        
+        const url = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchQuery)}&origin=GLOBAL_SEARCH_HEADER`;
+        
+        window.open(url, '_blank');
+        
+        setIsLoading(false);
+        toast.info("LinkedIn search opened. Use the Lead Genius sidebar on that page to sync leads to your CRM.");
     };
 
     return (
@@ -57,6 +71,8 @@ export default function StandardSearch() {
                     </label>
                     <div className="flex items-center gap-3 rounded-xl border border-input bg-card/50 px-4 py-3 transition focus-within:ring-1 focus-within:ring-blue-500/50">
                         <Input
+                            value={keywords}
+                            onChange={(e) => setKeywords(e.target.value)}
                             className="w-full bg-transparent border-none text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0 px-0"
                             placeholder={`e.g. ("SaaS" OR "Software") AND "Marketing" NOT "Intern"`}
                         />
@@ -75,6 +91,8 @@ export default function StandardSearch() {
                         <div className="flex items-center gap-3 rounded-xl border border-input bg-card/50 px-4 py-3 transition focus-within:ring-1 focus-within:ring-blue-500/50">
                             <Briefcase className="h-4 w-4 text-muted-foreground" />
                             <Input
+                                value={jobTitle}
+                                onChange={(e) => setJobTitle(e.target.value)}
                                 className="w-full bg-transparent border-none text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0 px-0"
                                 placeholder="e.g. Marketing Director"
                             />
@@ -88,6 +106,8 @@ export default function StandardSearch() {
                         <div className="flex items-center gap-3 rounded-xl border border-input bg-card/50 px-4 py-3 transition focus-within:ring-1 focus-within:ring-blue-500/50">
                             <MapPin className="h-4 w-4 text-muted-foreground" />
                             <Input
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
                                 className="w-full bg-transparent border-none text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0 px-0"
                                 placeholder="e.g. San Francisco, Remote"
                             />
@@ -104,6 +124,8 @@ export default function StandardSearch() {
                         <div className="flex items-center gap-3 rounded-xl border border-input bg-card/50 px-4 py-3 transition focus-within:ring-1 focus-within:ring-blue-500/50">
                             <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                             <Input
+                                value={industry}
+                                onChange={(e) => setIndustry(e.target.value)}
                                 className="w-full bg-transparent border-none text-sm text-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:ring-0 px-0"
                                 placeholder="e.g. Computer Software"
                             />
