@@ -28,6 +28,16 @@ export default function SignupPage() {
     // OTP fields
     const [isVerifying, setIsVerifying] = useState(false);
     const [otp, setOtp] = useState("");
+    const [isResending, setIsResending] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+
+    // Initial countdown check/timer
+    useEffect(() => {
+        if (countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [countdown]);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -92,6 +102,32 @@ export default function SignupPage() {
         }
 
         setIsSubmitting(false);
+    };
+
+    const handleResendOTP = async () => {
+        if (countdown > 0 || isResending) return;
+
+        setIsResending(true);
+        const { data, error } = await api.post("/api/auth/resend-verification", { email });
+        
+        if (error) {
+            toast.error(error.detail || "Failed to resend code");
+        } else if (data) {
+            // Check for backup token
+            if ((data as any)._dev_verification_token) {
+                console.log("OTP Backup Information (Resend):", (data as any)._dev_verification_token);
+                if ((data as any).message?.includes("Could not send email")) {
+                    toast.warning("Email delivery failed, but we updated your fallback code. Please check the console.");
+                } else {
+                    toast.success("A new verification code has been generated.");
+                }
+            } else {
+                toast.success("A new verification code has been sent to your email!");
+            }
+            // Start 30s countdown
+            setCountdown(30);
+        }
+        setIsResending(false);
     };
 
     const handleVerifyOTP = async (e: React.FormEvent) => {
@@ -229,24 +265,25 @@ export default function SignupPage() {
                             </button>
 
                             <div className="text-center space-y-4">
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-sm text-muted-foreground p-2 rounded-lg bg-secondary/30">
                                     Didn't receive the code?{" "}
-                                    <button 
-                                        type="button"
-                                        onClick={async () => {
-                                            const { error } = await api.post("/api/auth/resend-verification", { email });
-                                            if (error) toast.error("Failed to resend code");
-                                            else toast.success("New code sent to your email!");
-                                        }}
-                                        className="font-semibold text-blue-400 hover:text-blue-300"
-                                    >
-                                        Resend Code
-                                    </button>
+                                    {countdown > 0 ? (
+                                        <span className="font-semibold text-blue-400">Resend in {countdown}s</span>
+                                    ) : (
+                                        <button 
+                                            type="button"
+                                            onClick={handleResendOTP}
+                                            disabled={isResending}
+                                            className="font-semibold text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-50"
+                                        >
+                                            {isResending ? "Sending..." : "Resend Code"}
+                                        </button>
+                                    )}
                                 </p>
                                 <button
                                     type="button"
                                     onClick={() => setIsVerifying(false)}
-                                    className="text-xs text-muted-foreground hover:text-foreground"
+                                    className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
                                 >
                                     ← Back to signup
                                 </button>
