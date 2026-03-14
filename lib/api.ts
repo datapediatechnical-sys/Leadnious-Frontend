@@ -43,7 +43,7 @@ function addRefreshSubscriber(cb: (token: string) => void) {
  */
 function normalizeEndpoint(endpoint: string): string {
     // These endpoints should NOT have a trailing slash as they cause 404s on the backend
-    const excludedEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/token'];
+    const excludedEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/token', '/api/auth/forgot-password', '/api/auth/reset-password'];
     
     const [path, query] = endpoint.split('?');
     

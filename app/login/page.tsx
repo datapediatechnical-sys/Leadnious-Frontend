@@ -52,8 +52,15 @@ export default function LoginPage() {
         setIsSubmitting(true);
 
         try {
-            const res = await api.post("/api/auth/forgot-password", { email });
+            const res = await api.post<any>("/api/auth/forgot-password", { email });
             if (res.error) throw res.error;
+            
+            const data = res.data;
+            if (data && data._dev_reset_token) {
+                toast.info(`[DEV Mode] OTP Code: ${data._dev_reset_token}`, { duration: 8000 });
+                setOtp(data._dev_reset_token);
+            }
+            
             toast.success("If the email exists, a reset code has been sent!");
             setView("forgot_otp");
         } catch (error: any) {
