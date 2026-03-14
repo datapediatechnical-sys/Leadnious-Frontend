@@ -106,7 +106,7 @@ export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; 
                 const switchRes = await api.post<{
                     access_token?: string;
                     token_type?: string;
-                }>(`/api/organizations/switch/${selectedOrgId}/`);
+                }>(`/api/organizations/switch/${selectedOrgId}`);
 
                 if (switchRes.data?.access_token) {
                     // Save the new token with the org context
@@ -138,7 +138,7 @@ export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; 
                     }
                 };
 
-                const { data, error } = await api.post<any>("/api/campaigns/", payload);
+                const { data, error } = await api.post<any>("/api/campaigns", payload);
 
                 if (error || !data) {
                     toast.error(`Failed to create list: ${error?.detail || "Unknown error"}`);
@@ -154,7 +154,7 @@ export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; 
 
                         const pollInterval = setInterval(async () => {
                             try {
-                                const { data: campaign, error: pollError } = await api.get<any>(`/api/campaigns/${campaignId}/`);
+                                const { data: campaign, error: pollError } = await api.get<any>(`/api/campaigns/${campaignId}`);
 
                                 if (pollError) {
                                     // retrying...

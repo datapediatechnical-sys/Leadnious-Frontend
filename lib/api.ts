@@ -47,8 +47,14 @@ function normalizeEndpoint(endpoint: string): string {
     
     const [path, query] = endpoint.split('?');
     
-    // Do not add trailing slashes to these exact excluded routes or any linkedin/integrations routes
-    if (excludedEndpoints.some(ex => path === ex) || path.startsWith('/api/linkedin') || path.startsWith('/api/integrations')) {
+    // Do not add trailing slashes to these exact excluded routes or any specific api prefixes
+    if (
+        excludedEndpoints.some(ex => path === ex) || 
+        path.startsWith('/api/linkedin') || 
+        path.startsWith('/api/integrations') ||
+        path.startsWith('/api/campaigns') ||
+        path.startsWith('/api/organizations')
+    ) {
         return endpoint;
     }
     
