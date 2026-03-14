@@ -27,11 +27,6 @@ export default function ForgotPasswordPage() {
             if (res.error) throw res.error;
             
             const data = res.data;
-            if (data && data._dev_reset_token) {
-                toast.info(`[DEV Mode] OTP Code: ${data._dev_reset_token}`, { duration: 8000 });
-                setOtp(data._dev_reset_token);
-            }
-            
             toast.success("If the email exists, a reset code has been sent!");
             setView("otp");
         } catch (error: any) {
