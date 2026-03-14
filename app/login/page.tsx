@@ -52,7 +52,8 @@ export default function LoginPage() {
         setIsSubmitting(true);
 
         try {
-            await api.post("/api/auth/forgot-password", { email });
+            const res = await api.post("/api/auth/forgot-password", { email });
+            if (res.error) throw res.error;
             toast.success("If the email exists, a reset code has been sent!");
             setView("forgot_otp");
         } catch (error: any) {
@@ -71,7 +72,8 @@ export default function LoginPage() {
         setIsSubmitting(true);
 
         try {
-            await api.post("/api/auth/reset-password", { token: otp, new_password: newPassword });
+            const res = await api.post("/api/auth/reset-password", { token: otp, new_password: newPassword });
+            if (res.error) throw res.error;
             toast.success("Password reset successfully! Please log in.");
             setView("login");
             setPassword("");
