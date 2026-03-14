@@ -1,17 +1,20 @@
 "use client";
 
-import { Linkedin, Lock, X, Loader2, Rocket } from "lucide-react";
+import { Linkedin, Lock, X, Loader2, Rocket, Plus, Upload, MoreHorizontal, Trash2, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import Header from "@/components/Header";
+import Papa from "papaparse";
 
 interface LinkedInCredential {
     id: string;
     type: "personal" | "organization";
     profile_name?: string;
     profile_url?: string;
+    identity?: string;
+    activity_percent?: number;
     has_sales_navigator: boolean;
     connected_by?: string;
     connected_at: string;
@@ -41,6 +44,7 @@ export default function LinkedInSettingsPage() {
     const [linkedinName, setLinkedinName] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isSavingCredentials, setIsSavingCredentials] = useState(false);
+    const [isBulkUploading, setIsBulkUploading] = useState(false);
 
     useEffect(() => {
         fetchLinkedInStatus();
@@ -173,6 +177,50 @@ export default function LinkedInSettingsPage() {
         }
     };
 
+    const handleBulkUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsBulkUploading(true);
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: async (results) => {
+                const accounts = results.data.map((row: any) => ({
+                    linkedin_email: row.email || row.Email || row.linkedin_email,
+                    linkedin_password: row.password || row.Password || row.linkedin_password,
+                    profile_name: row.name || row.Name || row.full_name,
+                    credential_type: "organization"
+                })).filter(acc => acc.linkedin_email && acc.linkedin_password);
+
+                if (accounts.length === 0) {
+                    toast.error("No valid accounts found in CSV. Ensure columns 'email' and 'password' exist.");
+                    setIsBulkUploading(false);
+                    return;
+                }
+
+                try {
+                    const res = await api.post<{ created: number }>("/api/linkedin/bulk-connect", { accounts });
+                    if (!res.error && res.data) {
+                        toast.success(`Successfully uploaded ${res.data.created} employee accounts`);
+                        await fetchLinkedInStatus();
+                    } else {
+                        toast.error(res.error?.detail || "Bulk upload failed");
+                    }
+                } catch (error) {
+                    console.error("Bulk upload error:", error);
+                    toast.error("Failed to process bulk upload");
+                } finally {
+                    setIsBulkUploading(false);
+                }
+            },
+            error: (error) => {
+                toast.error("Error parsing CSV: " + error.message);
+                setIsBulkUploading(false);
+            }
+        });
+    };
+
     const openCredentialModal = (type: "personal" | "organization") => {
         setCredentialModalType(type);
         setLinkedinEmail("");
@@ -299,145 +347,137 @@ export default function LinkedInSettingsPage() {
                             )}
                         </div>
 
-                        {/* Organization LinkedIn */}
-                        <div className="mb-6 rounded-2xl border border-border bg-card p-8 transition-colors duration-300">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="grid h-8 w-8 place-items-center rounded bg-[#0077b5] text-white">
-                                        <Linkedin size={18} fill="currentColor" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-foreground">Organization LinkedIn</h3>
-                                    <span className="text-xs text-muted-foreground">(Shared across team)</span>
+                        {/* Organization LinkedIn / Employee Accounts */}
+                        <div className="mb-6 rounded-[2rem] border border-border bg-card p-10 shadow-sm transition-all duration-300">
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                                    <Mail size={24} />
                                 </div>
-                                {hasOrgCredential && (
-                                    <div className="flex gap-4">
-                                        <button
-                                            onClick={() => handleConnect("organization")}
-                                            className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0077b5] hover:text-blue-400 transition-colors"
-                                        >
-                                            + Add OAuth
-                                        </button>
-                                        <button
-                                            onClick={() => openCredentialModal("organization")}
-                                            className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0077b5] hover:text-blue-400 transition-colors"
-                                        >
-                                            + Add Account
-                                        </button>
-                                    </div>
-                                )}
+                                <div>
+                                    <h3 className="text-xl font-bold text-foreground">Active Accounts</h3>
+                                    <p className="text-sm text-muted-foreground">Add and manage your outreach identities.</p>
+                                </div>
                             </div>
 
-                            {hasOrgCredential ? (
+                            <div className="mt-10 overflow-hidden">
+                                <div className="grid grid-cols-[1.2fr,1.5fr,1.2fr,0.5fr] px-6 mb-6 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                                    <div>Provider</div>
+                                    <div>Identity</div>
+                                    <div>Activity</div>
+                                    <div className="text-right">Actions</div>
+                                </div>
+
                                 <div className="space-y-4">
-                                    {orgCredentials.map((cred) => (
-                                        <div key={cred.id} className="flex flex-col gap-4 p-5 rounded-2xl border border-border bg-background hover:border-[#0077b5]/30 transition-all group">
-                                            <div className="flex items-center justify-between">
+                                    {orgCredentials.length > 0 ? (
+                                        orgCredentials.map((cred) => (
+                                            <div key={cred.id} className="grid grid-cols-[1.2fr,1.5fr,1.2fr,0.5fr] items-center rounded-3xl border border-border bg-background p-6 hover:shadow-md transition-all group">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 p-[2px] transition-transform group-hover:rotate-6">
-                                                        <div className="h-full w-full rounded-2xl bg-white grid place-items-center">
-                                                            <Linkedin size={24} className="text-[#0077b5]" />
-                                                        </div>
+                                                    <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 grid place-items-center">
+                                                        <Linkedin size={20} className="text-[#0077b5]" />
                                                     </div>
-                                                    <div>
-                                                        <div className="font-bold text-foreground text-lg">
-                                                            {cred.profile_name || "Organization Account"}
-                                                        </div>
-                                                        {cred.connected_by && (
-                                                            <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-1">
-                                                                Linked by {cred.connected_by}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    <span className="font-bold text-foreground">LinkedIn</span>
                                                 </div>
-                                                <div className="flex items-center gap-6">
-                                                    <div className="flex flex-col items-end">
-                                                        <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Daily Usage</div>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-2 w-24 bg-muted rounded-full overflow-hidden">
-                                                                <div
-                                                                    className="h-full bg-blue-500"
-                                                                    style={{ width: `${Math.min(100, (cred.sent_count_today / cred.daily_limit) * 100)}%` }}
-                                                                />
-                                                            </div>
-                                                            <span className="text-xs font-bold text-foreground">{cred.sent_count_today}/{cred.daily_limit}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col items-start">
-                                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Quota</span>
-                                                        <input
-                                                            type="number"
-                                                            className="w-20 h-9 rounded-xl border border-border bg-muted/50 px-3 text-xs font-bold focus:border-blue-500/50 outline-none transition-all"
-                                                            defaultValue={cred.daily_limit}
-                                                            onBlur={(e) => handleUpdateLimit(cred.id, parseInt(e.target.value))}
+                                                
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-foreground truncate max-w-[200px]">
+                                                        {cred.identity || "Unknown Identity"}
+                                                    </span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70">
+                                                        {cred.profile_name || "Employee"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-4 pr-10">
+                                                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-blue-500 transition-all duration-500" 
+                                                            style={{ width: `${cred.activity_percent || 0}%` }}
                                                         />
                                                     </div>
-                                                    <button
+                                                    <span className="text-[10px] font-black text-foreground whitespace-nowrap">
+                                                        {cred.sent_count_today}/{cred.daily_limit}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button 
                                                         onClick={() => handleDisconnect("organization", cred.id)}
-                                                        className="p-2.5 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-colors"
-                                                        title="Disconnect account"
+                                                        className="p-2 rounded-xl text-muted-foreground hover:bg-rose-500/10 hover:text-rose-500 transition-colors"
                                                     >
-                                                        <X size={20} />
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                    <button className="p-2 rounded-xl text-muted-foreground hover:bg-muted transition-colors">
+                                                        <MoreHorizontal size={18} />
                                                     </button>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
-
-                                    {/* Rotation Mode Selector */}
-                                    {personalCredential && (
-                                        <div className="mt-8 flex items-center justify-between rounded-2xl border border-blue-500/10 bg-blue-500/5 p-6 border-dashed">
-                                            <div className="flex items-start gap-4">
-                                                <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-500/10 text-blue-500">
-                                                    <Rocket size={20} />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-foreground">Outreach Priority: Team Shared</span>
-                                                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-1">
-                                                        Campaigns will use organization accounts in a round-robin rotation
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => handleSetPreference(false)}
-                                                className={`relative w-14 h-7 rounded-full transition-all duration-300 ${!status?.using_personal ? "bg-blue-600 shadow-lg shadow-blue-500/20" : "bg-muted"}`}
-                                            >
-                                                <div
-                                                    className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${!status?.using_personal ? "translate-x-7 scale-110" : "translate-x-0"}`}
-                                                />
-                                            </button>
+                                        ))
+                                    ) : (
+                                        <div className="py-12 text-center rounded-3xl border border-dashed border-border bg-muted/5">
+                                            <p className="text-sm text-muted-foreground">No employee accounts connected yet.</p>
                                         </div>
                                     )}
                                 </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    <div className="flex flex-col items-center justify-center py-12 px-6 rounded-3xl border border-dashed border-border bg-muted/5">
-                                        <div className="h-16 w-16 rounded-3xl bg-muted/20 grid place-items-center mb-6">
-                                            <Linkedin size={32} className="text-muted-foreground/40" />
+
+                                <div className="mt-10 flex items-center gap-6">
+                                    <button 
+                                        onClick={() => openCredentialModal("organization")}
+                                        className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                                    >
+                                        <div className="grid h-6 w-6 place-items-center rounded-lg bg-blue-50 text-blue-600">
+                                            <Plus size={14} />
                                         </div>
-                                        <div className="text-center mb-8">
-                                            <h4 className="font-bold text-foreground mb-2">No organization accounts connected</h4>
-                                            <p className="text-xs text-muted-foreground max-w-[280px] mx-auto leading-relaxed">
-                                                Share account access with your entire team to scale your LinkedIn outreach safely.
-                                            </p>
+                                        Add an account
+                                    </button>
+
+                                    <div className="w-px h-6 bg-border" />
+
+                                    <label className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
+                                        <div className="grid h-6 w-6 place-items-center rounded-lg bg-blue-50 text-blue-600">
+                                            <Upload size={14} />
                                         </div>
-                                        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                            <button
-                                                onClick={() => handleConnect("organization")}
-                                                disabled={isConnecting}
-                                                className="group relative overflow-hidden rounded-2xl bg-[#0077b5] px-8 py-4 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-[#006396] hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#0077b5]/20 disabled:opacity-50"
-                                            >
-                                                <span className="relative z-10 flex items-center justify-center gap-2">
-                                                    {isConnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Linkedin size={16} />}
-                                                    Connect via OAuth
-                                                </span>
-                                            </button>
-                                            <button
-                                                onClick={() => openCredentialModal("organization")}
-                                                className="rounded-2xl border border-border bg-card px-8 py-4 text-xs font-black uppercase tracking-widest text-foreground transition-all hover:bg-muted hover:scale-[1.02] active:scale-95"
-                                            >
-                                                Use Credentials
-                                            </button>
+                                        Bulk upload Employees (CSV)
+                                        <input 
+                                            type="file" 
+                                            accept=".csv" 
+                                            className="hidden" 
+                                            onChange={handleBulkUpload}
+                                            disabled={isBulkUploading}
+                                        />
+                                    </label>
+                                    
+                                    {isBulkUploading && (
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">
+                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                            Processing CSV...
                                         </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Preference Toggle moved here to emphasize rotation */}
+                            {personalCredential && (
+                                <div className="mt-12 rounded-3xl border border-blue-500/20 bg-blue-500/[0.03] p-8">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-start gap-4">
+                                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-500/10 text-blue-600">
+                                                <Rocket size={24} />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-foreground">Enable Team Outreach Rotation</h4>
+                                                <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                                                    When enabled, campaigns will automatically rotate between all active employee and personal accounts to maximize volume while staying safe.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleSetPreference(false)}
+                                            className={`relative w-14 h-7 rounded-full transition-all duration-300 ${!status?.using_personal ? "bg-blue-600 shadow-lg shadow-blue-500/20" : "bg-muted"}`}
+                                        >
+                                            <div
+                                                className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${!status?.using_personal ? "translate-x-7" : "translate-x-0"}`}
+                                            />
+                                        </button>
                                     </div>
                                 </div>
                             )}
