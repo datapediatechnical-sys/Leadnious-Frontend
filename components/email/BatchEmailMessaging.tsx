@@ -152,12 +152,6 @@ export default function BatchEmailMessaging({
             ));
 
             try {
-                // Personalize
-                let personalizedMsg = messageTemplate.replace(/{{name}}/g, lead.name || "");
-                personalizedMsg = personalizedMsg.replace(/{{company}}/g, lead.company || "");
-                personalizedMsg = personalizedMsg.replace(/{{title}}/g, lead.title || "");
-                personalizedMsg = personalizedMsg.replace(/{{first_name}}/g, (lead.name || "").split(" ")[0]);
-
                 const resolvedEmail = lead.email || editedEmails[lead.id];
 
                 // Fire update and await so the backend has the email before creating message and sending
@@ -176,7 +170,7 @@ export default function BatchEmailMessaging({
                 const msgRes = await api.post<any>("/api/outreach/", {
                     lead_id: lead.id,
                     channel: "email",
-                    message: personalizedMsg,
+                    message: messageTemplate,
                     status: "pending"
                 });
 
@@ -242,6 +236,24 @@ export default function BatchEmailMessaging({
         const t = templates[selectedIndex];
         if (!t) return;
         handleUpdateTemplate(t.id, t.content + variable);
+    };
+
+    // Personalize template for preview using first lead's data
+    const personalizePreview = (template: string, lead: Lead) => {
+        const name = lead.name || "";
+        const parts = (name || "").split(" ");
+        const firstName = parts[0] || "";
+        const lastName = parts.slice(1).join(" ") || "";
+
+        return template
+            .replace(/\{\{name\}\}|\[name\]/gi, name)
+            .replace(/\{\{first_?name\}\}|\[first\s*name\]/gi, firstName)
+            .replace(/\{\{last_?name\}\}|\[last\s*name\]/gi, lastName)
+            .replace(/\{\{company\}\}|\[company\]/gi, lead.company || "")
+            .replace(/\{\{title\}\}|\[title\]/gi, lead.title || "")
+            .replace(/\{\{email\}\}|\[email\]/gi, lead.email || "")
+            .replace(/\{\{location\}\}|\[location\]/gi, "")
+            .replace(/\{\{industry\}\}|\[industry\]/gi, "");
     };
 
     return (
@@ -436,9 +448,9 @@ export default function BatchEmailMessaging({
 
                                                     {/* Variables */}
                                                     <div className="cursor-default">
-                                                        <p className="text-xs text-muted-foreground mb-2">Insert Variables:</p>
+                                                        <p className="text-xs text-muted-foreground mb-2">Click to insert:</p>
                                                         <div className="flex flex-wrap gap-2">
-                                                            {["{{first_name}}", "{{name}}", "{{company}}", "{{title}}"].map(v => (
+                                                            {["[first name]", "[name]", "[company]", "[title]", "[last name]", "[email]"].map(v => (
                                                                 <button
                                                                     key={v}
                                                                     onClick={(e) => { e.stopPropagation(); insertVariable(v); }}
@@ -450,6 +462,27 @@ export default function BatchEmailMessaging({
                                                             ))}
                                                         </div>
                                                     </div>
+
+                                                    {/* Live Preview for first leads */}
+                                                    {/\{\{|\[/.test(template.content) && template.content.trim() && leadsWithEmail.length > 0 && (
+                                                        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.03] overflow-hidden">
+                                                            <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 border-b border-emerald-500/10">
+                                                                📨 Live Preview (first {Math.min(3, leadsWithEmail.length)} leads)
+                                                            </div>
+                                                            <div className="divide-y divide-border max-h-40 overflow-y-auto">
+                                                                {leadsWithEmail.slice(0, 3).map((lead) => (
+                                                                    <div key={lead.id} className="px-3 py-2.5">
+                                                                        <div className="text-[10px] font-bold text-muted-foreground mb-1">
+                                                                            → {lead.name || "Unknown"}
+                                                                        </div>
+                                                                        <div className="text-xs text-foreground whitespace-pre-wrap leading-relaxed line-clamp-3">
+                                                                            {personalizePreview(template.content, lead)}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     {/* Action Buttons */}
                                                     <div className="pt-2 flex gap-3">

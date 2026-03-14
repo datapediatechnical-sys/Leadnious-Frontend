@@ -262,14 +262,14 @@ export default function BatchLinkedInMessaging({
         const lastName = parts.slice(1).join(" ") || "";
 
         return template
-            .replace(/\{\{name\}\}/g, name)
-            .replace(/\{\{first_name\}\}/g, firstName)
-            .replace(/\{\{last_name\}\}/g, lastName)
-            .replace(/\{\{company\}\}/g, lead.company || "")
-            .replace(/\{\{title\}\}/g, lead.title || "")
-            .replace(/\{\{email\}\}/g, lead.email || "")
-            .replace(/\{\{location\}\}/g, "")
-            .replace(/\{\{industry\}\}/g, "");
+            .replace(/\{\{name\}\}|\[name\]/gi, name)
+            .replace(/\{\{first_?name\}\}|\[first\s*name\]/gi, firstName)
+            .replace(/\{\{last_?name\}\}|\[last\s*name\]/gi, lastName)
+            .replace(/\{\{company\}\}|\[company\]/gi, lead.company || "")
+            .replace(/\{\{title\}\}|\[title\]/gi, lead.title || "")
+            .replace(/\{\{email\}\}|\[email\]/gi, lead.email || "")
+            .replace(/\{\{location\}\}|\[location\]/gi, "")
+            .replace(/\{\{industry\}\}|\[industry\]/gi, "");
     };
 
     return (
@@ -494,7 +494,7 @@ export default function BatchLinkedInMessaging({
                                                     </div>
 
                                                     {/* Live Preview for first leads */}
-                                                    {template.content.includes("{{") && template.content.trim() && leadsWithLinkedIn.length > 0 && (
+                                                    {/\{\{|\[/.test(template.content) && template.content.trim() && leadsWithLinkedIn.length > 0 && (
                                                         <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.03] overflow-hidden">
                                                             <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 border-b border-blue-500/10">
                                                                 📨 Live Preview (first {Math.min(3, leadsWithLinkedIn.length)} leads)

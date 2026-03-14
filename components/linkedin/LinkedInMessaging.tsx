@@ -53,21 +53,21 @@ export default function LinkedInMessaging({
         const lastName = parts.slice(1).join(" ") || "";
 
         return template
-            .replace(/\{\{name\}\}/g, name)
-            .replace(/\{\{first_name\}\}/g, firstName)
-            .replace(/\{\{last_name\}\}/g, lastName)
-            .replace(/\{\{company\}\}/g, leadCompany || "")
-            .replace(/\{\{title\}\}/g, leadTitle || "")
-            .replace(/\{\{email\}\}/g, leadEmail || "")
-            .replace(/\{\{location\}\}/g, "")
-            .replace(/\{\{industry\}\}/g, "");
+            .replace(/\{\{name\}\}|\[name\]/gi, name)
+            .replace(/\{\{first_?name\}\}|\[first\s*name\]/gi, firstName)
+            .replace(/\{\{last_?name\}\}|\[last\s*name\]/gi, lastName)
+            .replace(/\{\{company\}\}|\[company\]/gi, leadCompany || "")
+            .replace(/\{\{title\}\}|\[title\]/gi, leadTitle || "")
+            .replace(/\{\{email\}\}|\[email\]/gi, leadEmail || "")
+            .replace(/\{\{location\}\}|\[location\]/gi, "")
+            .replace(/\{\{industry\}\}|\[industry\]/gi, "");
     };
 
     const insertVariable = (variable: string) => {
         setMessage(prev => prev + variable);
     };
 
-    const hasVariables = message.includes("{{");
+    const hasVariables = /\{\{|\[/.test(message);
     const previewText = personalizePreview(message);
 
     const handleSend = async () => {
