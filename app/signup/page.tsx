@@ -73,6 +73,15 @@ export default function SignupPage() {
         if (data) {
             toast.success("Registration successful! Please check your email for the OTP.");
             setIsVerifying(true);
+            
+            // For development purposes, if the backend returns the token, log it
+            if ((data as any)._dev_verification_token) {
+                console.log("DEV: Verification Token is", (data as any)._dev_verification_token);
+                // Optionally auto-fill it for developers
+                if (process.env.NODE_ENV === 'development') {
+                    setOtp((data as any)._dev_verification_token);
+                }
+            }
         }
 
         setIsSubmitting(false);
