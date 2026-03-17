@@ -235,17 +235,38 @@ export default function CampaignsPage() {
                     </div>
                 </div>
 
-                {/* Recent Activity */}
+                {/* Campaign List Section */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <h2 className="text-lg font-bold text-foreground">Recent Activity</h2>
+                        <div className="flex items-center gap-4">
+                            <h2 className="text-lg font-bold text-foreground">Campaigns</h2>
+                            <div className="relative w-64">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search campaigns..." 
+                                    className="w-full bg-card border border-border rounded-lg pl-8 pr-4 py-1.5 text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                                    onChange={(e) => {
+                                        const term = e.target.value.toLowerCase();
+                                        // Simple local filtering for now
+                                        const rows = document.querySelectorAll('.campaign-row');
+                                        rows.forEach((row: any) => {
+                                            const name = row.getAttribute('data-name')?.toLowerCase() || "";
+                                            row.style.display = name.includes(term) ? "grid" : "none";
+                                        });
+                                    }}
+                                />
+                            </div>
+                        </div>
                         <div className="flex gap-2">
                             <button className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition">Filter</button>
                             <button className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition">Export</button>
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-border bg-card shadow-sm">
+                    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                         {/* Table Header */}
                         <div className="grid grid-cols-12 gap-4 border-b border-border bg-muted/50 px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             <div className="col-span-4">Campaign Name</div>
@@ -257,35 +278,43 @@ export default function CampaignsPage() {
                         </div>
 
                         {/* Rows */}
-                        <div className="divide-y divide-border">
+                        <div className="divide-y divide-border max-h-[600px] overflow-y-auto scrollbar-thin">
                             {isLoading ? (
                                 <div className="flex items-center justify-center py-12">
                                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                                 </div>
                             ) : campaigns.length === 0 ? (
-                                <div className="py-12 text-center text-muted-foreground">
-                                    No campaigns yet. Create your first campaign!
+                                <div className="py-20 text-center">
+                                    <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
+                                        <PlusIcon className="text-muted-foreground" />
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">No campaigns yet</p>
+                                    <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">Create your first outreach campaign to start generating leads.</p>
+                                    <Link href="/dashboard/campaigns/templates" className="inline-block mt-4 text-xs font-bold text-blue-500 hover:text-blue-400">
+                                        Get Started →
+                                    </Link>
                                 </div>
                             ) : (
-                                campaigns.slice(0, 5).map((campaign) => {
+                                campaigns.map((campaign) => {
                                     const replyRate = campaign.contacted_count > 0
                                         ? ((campaign.replied_count / campaign.contacted_count) * 100).toFixed(1)
                                         : "0";
                                     return (
-                                        <ActivityRow
-                                            key={campaign.id}
-                                            id={campaign.id}
-                                            name={campaign.name}
-                                            created={`Created ${new Date(campaign.created_at).toLocaleDateString()}`}
-                                            channel={mapCampaignTypeToChannel(campaign.type)}
-                                            status={campaign.status}
-                                            progress={campaign.contacted_count}
-                                            total={campaign.leads_count}
-                                            replied={`${replyRate}%`}
-                                            color={campaign.status === "active" || campaign.status === "running" ? "blue" : "amber"}
-                                            onAction={handleCampaignAction}
-                                            onViewDetails={() => handleViewDetails(campaign)}
-                                        />
+                                        <div key={campaign.id} className="campaign-row" data-name={campaign.name}>
+                                            <ActivityRow
+                                                id={campaign.id}
+                                                name={campaign.name}
+                                                created={`Created ${new Date(campaign.created_at).toLocaleDateString()}`}
+                                                channel={mapCampaignTypeToChannel(campaign.type)}
+                                                status={campaign.status}
+                                                progress={campaign.contacted_count}
+                                                total={campaign.leads_count}
+                                                replied={`${replyRate}%`}
+                                                color={campaign.status === "active" || campaign.status === "running" ? "blue" : "amber"}
+                                                onAction={handleCampaignAction}
+                                                onViewDetails={() => handleViewDetails(campaign)}
+                                            />
+                                        </div>
                                     );
                                 })
                             )}
