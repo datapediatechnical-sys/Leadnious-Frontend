@@ -63,6 +63,7 @@ function normalizeEndpoint(endpoint: string): string {
         path.startsWith('/api/integrations') ||
         path.startsWith('/api/campaigns') ||
         path.startsWith('/api/organizations') ||
+        path.startsWith('/api/outreach') ||
         path.startsWith('/api/leads')
     ) {
         return endpoint;
