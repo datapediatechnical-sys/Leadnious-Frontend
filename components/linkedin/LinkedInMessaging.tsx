@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Linkedin, Send, Loader2, X } from "lucide-react";
+import { Linkedin, X, Send, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 import {
-    Dialog,
-    DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
@@ -130,9 +128,10 @@ export default function LinkedInMessaging({
                     toast.error(res.data?.error || "Failed to send LinkedIn message");
                 }
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error sending LinkedIn message:", error);
-            toast.error(error?.message || "Failed to send message");
+            const err = error as { message?: string };
+            toast.error(err.message || "Failed to send message");
         } finally {
             setIsSending(false);
         }

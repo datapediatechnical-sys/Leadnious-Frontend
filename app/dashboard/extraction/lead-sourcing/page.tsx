@@ -6,7 +6,6 @@ import {
     Bell, 
     CircleHelp, 
     Plus, 
-    Compass, 
     FileText, 
     UserPlus, 
     Upload, 
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import CSVImport from "@/components/extraction/CSVImport";
 import ManualLeadEntry from "@/components/extraction/ManualLeadEntry";

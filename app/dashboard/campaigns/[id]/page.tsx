@@ -14,7 +14,6 @@ import {
     CheckCircle2,
     Briefcase,
     Mail,
-    Phone,
     ExternalLink,
     Search,
     Filter,
@@ -28,11 +27,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
-    DialogTrigger,
 } from "@/components/ui/dialog";
-import LinkedInStatusBadge from "@/components/linkedin/LinkedInStatusBadge";
 import BatchLinkedInMessaging from "@/components/linkedin/BatchLinkedInMessaging";
 import BatchEmailMessaging from "@/components/email/BatchEmailMessaging";
+
+interface CampaignSettings {
+    template?: string;
+    message?: string;
+    url?: string;
+    [key: string]: unknown;
+}
 
 interface Campaign {
     id: string;
@@ -44,7 +48,7 @@ interface Campaign {
     replied_count: number;
     created_at: string;
     updated_at: string;
-    settings?: any;
+    settings?: CampaignSettings;
 }
 
 interface Lead {
@@ -87,7 +91,7 @@ export default function CampaignDetailsPage() {
     const [showBatchEmail, setShowBatchEmail] = useState(false);
 
     // Pagination & Filter (Simple for now)
-    const [page, setPage] = useState(1);
+    const [page] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
@@ -244,7 +248,7 @@ export default function CampaignDetailsPage() {
                     </div>
                     <div className="rounded-lg bg-muted/30 p-4 font-medium text-sm text-foreground leading-relaxed italic border border-border/50">
                         {(() => {
-                            const template = campaign.settings?.message || 'No message configured';
+                            const template = (campaign.settings?.message as string) || 'No message configured';
                             const firstLead = leads[0];
                             const firstName = firstLead?.name?.split(' ')[0] || 'Jordan';
 
@@ -413,7 +417,7 @@ export default function CampaignDetailsPage() {
                     <BatchLinkedInMessaging
                         leads={selectedLeads.length > 0 ? selectedLeadsObjects : leads}
                         onCancel={() => setShowBatchLinkedIn(false)}
-                        onComplete={(results) => {
+                        onComplete={() => {
                             setShowBatchLinkedIn(false);
                             // Deselect leads processed successfully? or keep valid selection?
                             // For now, keep selection so user can see what they selected
@@ -428,7 +432,7 @@ export default function CampaignDetailsPage() {
                     <BatchEmailMessaging
                         leads={selectedLeads.length > 0 ? selectedLeadsObjects : leads}
                         onCancel={() => setShowBatchEmail(false)}
-                        onComplete={(results) => {
+                        onComplete={() => {
                             setShowBatchEmail(false);
                         }}
                     />
@@ -438,7 +442,7 @@ export default function CampaignDetailsPage() {
     );
 }
 
-function StatBox({ label, value, icon }: { label: string, value: any, icon: React.ReactNode }) {
+function StatBox({ label, value, icon }: { label: string, value: React.ReactNode, icon: React.ReactNode }) {
     return (
         <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-4 shadow-sm">
             <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">

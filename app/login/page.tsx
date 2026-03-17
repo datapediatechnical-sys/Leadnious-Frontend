@@ -25,7 +25,7 @@ export default function LoginPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const result = await login(email, password);
+        const result = await login(email.trim(), password);
 
         if (result.success) {
             toast.success("Login successful!");
@@ -104,7 +104,7 @@ export default function LoginPage() {
                                 type="email"
                                 required
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => setEmail(e.target.value.replace(/\s/g, ""))}
                                 disabled={isSubmitting}
                             />
                         </div>

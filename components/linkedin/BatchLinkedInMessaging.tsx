@@ -31,7 +31,7 @@ interface BatchResults {
     total: number;
     successful: number;
     failed: number;
-    results: Array<{ lead_id: string; success: boolean; error?: string }>;
+    results: Array<{ lead_id: string; success: boolean; status?: string; error?: string }>;
 }
 
 interface SendingProgress {
@@ -44,6 +44,11 @@ interface Template {
     id: string;
     name: string;
     content: string;
+}
+
+interface LinkedInStatus {
+    personal_connected: boolean;
+    org_connected: boolean;
 }
 
 export default function BatchLinkedInMessaging({
@@ -67,16 +72,16 @@ export default function BatchLinkedInMessaging({
 
     const [isSending, setIsSending] = useState(false);
     const [progress, setProgress] = useState<SendingProgress[]>([]);
-    const [connectionStatus, setConnectionStatus] = useState<any>(null);
+    const [connectionStatus, setConnectionStatus] = useState<LinkedInStatus | null>(null);
     const [isCheckingConnection, setIsCheckingConnection] = useState(true);
 
     useEffect(() => {
         async function checkStatus() {
             try {
-                const { data } = await api.get<any>("/api/linkedin/status");
+                const { data } = await api.get<LinkedInStatus>("/api/linkedin/status");
                 if (data) setConnectionStatus(data);
-            } catch (err) {
-                console.error("Failed to check LinkedIn status", err);
+            } catch {
+                console.error("Failed to check LinkedIn status");
             } finally {
                 setIsCheckingConnection(false);
             }
@@ -176,7 +181,7 @@ export default function BatchLinkedInMessaging({
             });
 
             if (!res.error && res.data) {
-                const updatedProgress = res.data.results.map((result: any) => {
+                const updatedProgress = res.data.results.map((result) => {
                     let finalStatus: "pending" | "sending" | "success" | "failed" = "failed";
                     let errorMsg = result.error;
 
@@ -224,23 +229,24 @@ export default function BatchLinkedInMessaging({
                 if (Array.isArray(detail)) {
                     detail = detail[0]?.msg || JSON.stringify(detail);
                 } else if (typeof detail === 'object') {
-                    detail = (detail as any).message || JSON.stringify(detail);
+                    detail = (detail as { message?: string }).message || JSON.stringify(detail);
                 }
                 toast.error(detail);
                 setIsSending(false);
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error sending batch:", error);
-            let detail = error?.error?.detail || error?.message || "Failed to send messages";
-            
+            const err = error as { error?: { detail?: unknown }; message?: string };
+            let detail = err.error?.detail || err.message || "Failed to send messages";
+
             // Handle Pydantic validation errors (often an array)
             if (Array.isArray(detail)) {
                 detail = detail[0]?.msg || JSON.stringify(detail);
-            } else if (typeof detail === 'object') {
-                detail = detail.message || JSON.stringify(detail);
+            } else if (typeof detail === 'object' && detail !== null) {
+                detail = (detail as { message?: string }).message || JSON.stringify(detail);
             }
             
-            toast.error(detail);
+            toast.error(String(detail || "Failed to send messages"));
             setIsSending(false);
         }
     };
@@ -345,7 +351,7 @@ export default function BatchLinkedInMessaging({
                                 <AlertCircle className="h-5 w-5 shrink-0" />
                                 <div className="text-sm">
                                     <p className="font-bold mb-0.5">No Account Connected</p>
-                                    <p>You haven't connected a LinkedIn account via OAuth. Please use the <strong>Extension</strong> method or connect in settings.</p>
+                                    <p>You haven&apos;t connected a LinkedIn account via OAuth. Please use the <strong>Extension</strong> method or connect in settings.</p>
                                 </div>
                             </div>
                         )}
@@ -429,7 +435,7 @@ export default function BatchLinkedInMessaging({
 
                             <div className="overflow-hidden w-full cursor-grab active:cursor-grabbing" ref={emblaRef}>
                                 <div className="flex touch-pan-y">
-                                    {templates.map((template, idx) => {
+                                    {templates.map((template) => {
                                         const remainingChars = characterLimit - template.content.length;
                                         return (
                                             <div key={template.id} className="min-w-0 flex-[0_0_100%] pl-4 pr-4">
@@ -500,7 +506,7 @@ export default function BatchLinkedInMessaging({
                                                                 📨 Live Preview (first {Math.min(3, leadsWithLinkedIn.length)} leads)
                                                             </div>
                                                             <div className="divide-y divide-border max-h-40 overflow-y-auto">
-                                                                {leadsWithLinkedIn.slice(0, 3).map((lead, pIdx) => (
+                                                                {leadsWithLinkedIn.slice(0, 3).map((lead) => (
                                                                     <div key={lead.id} className="px-3 py-2.5">
                                                                         <div className="text-[10px] font-bold text-muted-foreground mb-1">
                                                                             → {lead.name || "Unknown"}
@@ -519,11 +525,11 @@ export default function BatchLinkedInMessaging({
                                                         <button
                                                             className="flex-1 py-2 rounded-lg bg-[#0077b5]/10 text-[#0077b5] font-semibold hover:bg-[#0077b5]/20 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                                                             onClick={handleSend}
-                                                            disabled={!template.content.trim() || leadsWithLinkedIn.length === 0 || isSending || (sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected)}
+                                                            disabled={!template.content.trim() || leadsWithLinkedIn.length === 0 || isSending || !!(sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected)}
                                                         >
                                                             <CheckCircle2 size={18} />
-                                                            {sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected 
-                                                                ? "Connect Account First" 
+                                                            {sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected
+                                                                ? "Connect Account First"
                                                                 : "Use This Template"}
                                                         </button>
                                                     </div>
@@ -594,7 +600,7 @@ export default function BatchLinkedInMessaging({
                             </button>
                             <button
                                 onClick={handleSend}
-                                disabled={isCheckingConnection || !messageTemplate.trim() || leadsWithLinkedIn.length === 0 || (sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected)}
+                                disabled={isCheckingConnection || !messageTemplate.trim() || leadsWithLinkedIn.length === 0 || !!(sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected)}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0077b5] text-white font-semibold hover:bg-[#006396] transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
                             >
                                 {isCheckingConnection ? (
@@ -602,8 +608,8 @@ export default function BatchLinkedInMessaging({
                                 ) : (
                                     <Send size={18} />
                                 )}
-                                {isCheckingConnection ? "Checking..." : (sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected 
-                                    ? "Connect Account First" 
+                                {isCheckingConnection ? "Checking..." : (sendMethod === 'api' && connectionStatus && !connectionStatus.personal_connected && !connectionStatus.org_connected
+                                    ? "Connect Account First"
                                     : "Send")}
                             </button>
                         </div>
