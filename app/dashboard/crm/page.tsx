@@ -783,6 +783,7 @@ export default function CRMPage() {
             {/* LinkedIn Messaging Modal */}
             <Dialog open={linkedInModalOpen} onOpenChange={setLinkedInModalOpen}>
                 <DialogContent className="max-w-2xl p-0">
+                    <DialogTitle className="sr-only">LinkedIn Messaging</DialogTitle>
                     {linkedInModalLead && (
                         <LinkedInMessaging
                             leadId={linkedInModalLead.id}
@@ -804,6 +805,7 @@ export default function CRMPage() {
             {/* Batch LinkedIn Messaging Modal */}
             <Dialog open={batchLinkedInModalOpen} onOpenChange={setBatchLinkedInModalOpen}>
                 <DialogContent className="max-w-4xl p-0 max-h-[90vh]">
+                    <DialogTitle className="sr-only">Batch LinkedIn Messaging</DialogTitle>
                     <BatchLinkedInMessaging
                         leads={leads.filter(l => selectedLeadsForBatch.has(l.id))}
                         onComplete={(results) => {
@@ -821,6 +823,7 @@ export default function CRMPage() {
             {/* Email Outreach Modal */}
             <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
                 <DialogContent className="max-w-2xl p-0">
+                    <DialogTitle className="sr-only">Email Outreach</DialogTitle>
                     {emailModalLead && (
                         <EmailMessaging
                             leadId={emailModalLead.id}
@@ -839,6 +842,7 @@ export default function CRMPage() {
             {/* Batch Email Messaging Modal */}
             <Dialog open={batchEmailModalOpen} onOpenChange={setBatchEmailModalOpen}>
                 <DialogContent className="max-w-4xl p-0 max-h-[90vh]">
+                    <DialogTitle className="sr-only">Batch Email Outreach</DialogTitle>
                     <BatchEmailMessaging
                         leads={leads.filter(l => selectedLeadsForBatch.has(l.id))}
                         onComplete={(results) => {

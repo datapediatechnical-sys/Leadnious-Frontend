@@ -27,6 +27,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import BatchLinkedInMessaging from "@/components/linkedin/BatchLinkedInMessaging";
 import BatchEmailMessaging from "@/components/email/BatchEmailMessaging";
@@ -414,6 +415,7 @@ export default function CampaignDetailsPage() {
             {/* Batch LinkedIn Modal */}
             <Dialog open={showBatchLinkedIn} onOpenChange={setShowBatchLinkedIn}>
                 <DialogContent className="sm:max-w-2xl p-0 overflow-hidden h-[80vh] flex flex-col">
+                    <DialogTitle className="sr-only">Batch LinkedIn Messaging</DialogTitle>
                     <BatchLinkedInMessaging
                         leads={selectedLeads.length > 0 ? selectedLeadsObjects : leads}
                         onCancel={() => setShowBatchLinkedIn(false)}
@@ -429,6 +431,7 @@ export default function CampaignDetailsPage() {
             {/* Batch Email Modal */}
             <Dialog open={showBatchEmail} onOpenChange={setShowBatchEmail}>
                 <DialogContent className="sm:max-w-2xl p-0 overflow-hidden h-[80vh] flex flex-col">
+                    <DialogTitle className="sr-only">Batch Email Messaging</DialogTitle>
                     <BatchEmailMessaging
                         leads={selectedLeads.length > 0 ? selectedLeadsObjects : leads}
                         onCancel={() => setShowBatchEmail(false)}
