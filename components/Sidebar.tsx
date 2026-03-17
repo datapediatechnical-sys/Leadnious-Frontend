@@ -50,6 +50,7 @@ interface Organization {
 interface OrganizationsResponse {
   organizations: Organization[];
   count: number;
+  current_org_id?: string | null;
 }
 
 export default function Sidebar() {
@@ -70,14 +71,22 @@ export default function Sidebar() {
 
       if (!error && data) {
         setOrganizations(data.organizations || []);
-        // Find the current org based on user's current_org_id (if we have it)
-        // For now, just use the first org as current
-        if (data.organizations && data.organizations.length > 0) {
+        
+        // Find the current org based on current_org_id from response
+        if (data.current_org_id && data.organizations) {
+            const found = data.organizations.find(o => o.id === data.current_org_id);
+            if (found) {
+                setCurrentOrg(found);
+            } else if (data.organizations.length > 0) {
+                setCurrentOrg(data.organizations[0]);
+            }
+        } else if (data.organizations && data.organizations.length > 0) {
           setCurrentOrg(data.organizations[0]);
         }
       }
       setIsLoadingOrgs(false);
     }
+
 
     if (user) {
       fetchOrganizations();

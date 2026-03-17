@@ -317,10 +317,14 @@ export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; 
                     {step === 2 && (
                         <div className="space-y-6">
                             {selected === "csv-import" ? (
-                                <CSVImport onSuccess={() => {
-                                    if (onSuccess) onSuccess();
-                                    onClose();
-                                }} />
+                                <CSVImport 
+                                    campaignName={listName}
+                                    onSuccess={() => {
+                                        if (onSuccess) onSuccess();
+                                        onClose();
+                                    }} 
+                                />
+
                             ) : selected === "manual-entry" ? (
                                 <ManualLeadEntry onSuccess={() => {
                                     if (onSuccess) onSuccess();

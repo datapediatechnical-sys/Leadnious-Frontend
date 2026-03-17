@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, FileType, CheckCircle2, AlertCircle, X } from "lucide-react";
 
-export default function CSVImport({ onSuccess }: { onSuccess?: () => void }) {
+export default function CSVImport({ onSuccess, campaignName }: { onSuccess?: () => void, campaignName?: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [dragActive, setDragActive] = useState(false);
@@ -54,7 +54,11 @@ export default function CSVImport({ onSuccess }: { onSuccess?: () => void }) {
         formData.append('file', file);
 
         try {
-            const { data, error } = await api.postMultipart<any>("/api/leads/import/", formData);
+            const url = campaignName 
+                ? `/api/leads/import/?campaign_name=${encodeURIComponent(campaignName)}` 
+                : "/api/leads/import/";
+            const { data, error } = await api.postMultipart<any>(url, formData);
+
             
             if (data) {
                 toast.success(`Successfully imported ${data.imported || 0} leads!`);
