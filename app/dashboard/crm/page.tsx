@@ -298,20 +298,13 @@ export default function CRMPage() {
         formData.append('file', file);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/import/`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                const data = await response.json();
+            const { data, error } = await api.postMultipart<any>("/api/leads/import/", formData);
+            
+            if (data) {
                 toast.success(`Imported ${data.created || 0} leads successfully!`);
                 fetchLeads(); // Refresh the list
             } else {
-                toast.error("Failed to import leads");
+                toast.error(error?.detail || "Failed to import leads");
             }
         } catch (error) {
             toast.error("Error importing leads");

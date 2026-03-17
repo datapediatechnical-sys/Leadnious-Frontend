@@ -54,22 +54,14 @@ export default function CSVImport({ onSuccess }: { onSuccess?: () => void }) {
         formData.append('file', file);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/leads/import/`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: formData
-            });
-
-            if (response.ok) {
-                const data = await response.json();
+            const { data, error } = await api.postMultipart<any>("/api/leads/import/", formData);
+            
+            if (data) {
                 toast.success(`Successfully imported ${data.created || 0} leads!`);
                 setFile(null);
                 if (onSuccess) onSuccess();
             } else {
-                const err = await response.json();
-                toast.error(err.detail || "Failed to import leads");
+                toast.error(error?.detail || "Failed to import leads");
             }
         } catch (error) {
             console.error("Import error:", error);

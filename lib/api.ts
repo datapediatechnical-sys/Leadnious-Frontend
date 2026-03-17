@@ -81,13 +81,16 @@ export async function apiRequest<T>(
     const normalizedEndpoint = normalizeEndpoint(endpoint);
     const token = getAccessToken();
 
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...options.headers,
-    };
+    // Prepare headers
+    const headers = new Headers(options.headers || {});
+
+    // Set default Content-Type if not provided and body is not FormData
+    if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+        headers.set('Content-Type', 'application/json');
+    }
 
     if (token) {
-        (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+        headers.set('Authorization', `Bearer ${token}`);
     }
 
     try {
@@ -121,14 +124,12 @@ export async function apiRequest<T>(
 
                     if (refreshRes.ok) {
                         const data = await refreshRes.json();
-                        // Import setTokens or use it directly
                         localStorage.setItem('access_token', data.access_token);
                         localStorage.setItem('token_expires_at', String(Date.now() + data.expires_in * 1000));
 
                         isRefreshing = false;
                         onTokenRefreshed(data.access_token);
                     } else {
-                        // Refresh failed
                         isRefreshing = false;
                         if (typeof window !== 'undefined') {
                             localStorage.clear();
@@ -145,8 +146,8 @@ export async function apiRequest<T>(
             // Wait for refresh to complete and retry
             return new Promise((resolve) => {
                 addRefreshSubscriber((newToken) => {
-                    const retryHeaders = { ...headers, 'Authorization': `Bearer ${newToken}` };
-                    resolve(apiRequest<T>(endpoint, { ...options, headers: retryHeaders }));
+                    headers.set('Authorization', `Bearer ${newToken}`);
+                    resolve(apiRequest<T>(endpoint, { ...options, headers }));
                 });
             });
         }
@@ -201,13 +202,19 @@ export const api = {
     post: <T>(endpoint: string, body?: unknown) =>
         apiRequest<T>(endpoint, {
             method: 'POST',
-            body: body ? JSON.stringify(body) : undefined,
+            body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
+        }),
+
+    postMultipart: <T>(endpoint: string, formData: FormData) =>
+        apiRequest<T>(endpoint, {
+            method: 'POST',
+            body: formData,
         }),
 
     patch: <T>(endpoint: string, body?: unknown) =>
         apiRequest<T>(endpoint, {
             method: 'PATCH',
-            body: body ? JSON.stringify(body) : undefined,
+            body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
         }),
 
     delete: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'DELETE' }),
