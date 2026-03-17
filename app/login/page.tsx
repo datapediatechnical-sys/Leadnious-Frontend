@@ -95,10 +95,15 @@ export default function LoginPage() {
                     {/* Login Form */}
                     <form onSubmit={handleLoginSubmit} className="space-y-4">
                         <div>
-                            <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                            <label 
+                                htmlFor="email-input"
+                                className="mb-2 block text-xs font-medium text-muted-foreground"
+                            >
                                 Work Email
                             </label>
                             <input
+                                id="email-input"
+                                name="email"
                                 className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                 placeholder="name@company.com"
                                 type="email"
@@ -111,7 +116,10 @@ export default function LoginPage() {
 
                         <div>
                             <div className="mb-2 flex items-center justify-between">
-                                <label className="block text-xs font-medium text-muted-foreground">
+                                <label 
+                                    htmlFor="password-input"
+                                    className="block text-xs font-medium text-muted-foreground"
+                                >
                                     Password
                                 </label>
                                 <button
@@ -125,6 +133,8 @@ export default function LoginPage() {
 
                             <div className="relative">
                                 <input
+                                    id="password-input"
+                                    name="password"
                                     className="h-11 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                     placeholder="••••••••"
                                     type={showPassword ? "text" : "password"}
@@ -143,10 +153,20 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <input type="checkbox" className="h-4 w-4 accent-blue-600" />
-                            Remember me for 30 days
-                        </label>
+                        <div className="flex items-center gap-2">
+                            <input 
+                                id="remember-me"
+                                name="remember-me"
+                                type="checkbox" 
+                                className="h-4 w-4 accent-blue-600" 
+                            />
+                            <label 
+                                htmlFor="remember-me"
+                                className="text-xs text-muted-foreground cursor-pointer"
+                            >
+                                Remember me for 30 days
+                            </label>
+                        </div>
 
                         <button
                             type="submit"

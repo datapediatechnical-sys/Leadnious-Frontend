@@ -127,10 +127,15 @@ export default function ForgotPasswordPage() {
 
                             <form onSubmit={handleEmailSubmit} className="mt-8 space-y-4">
                                 <div>
-                                    <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                    <label 
+                                        htmlFor="email-input"
+                                        className="mb-2 block text-xs font-medium text-muted-foreground"
+                                    >
                                         Work Email
                                     </label>
                                     <input
+                                        id="email-input"
+                                        name="email"
                                         className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                         placeholder="name@company.com"
                                         type="email"
@@ -179,10 +184,15 @@ export default function ForgotPasswordPage() {
 
                             <form onSubmit={handleResetSubmit} className="mt-8 space-y-4">
                                 <div>
-                                    <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                    <label 
+                                        htmlFor="otp-input"
+                                        className="mb-2 block text-xs font-medium text-muted-foreground"
+                                    >
                                         6-Digit Verification Code
                                     </label>
                                     <input
+                                        id="otp-input"
+                                        name="otp"
                                         className="h-11 w-full rounded-xl border border-input bg-background px-4 text-center tracking-widest text-lg font-mono text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                         placeholder="000000"
                                         type="text"
@@ -196,11 +206,16 @@ export default function ForgotPasswordPage() {
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 mt-4 block text-xs font-medium text-muted-foreground">
+                                    <label 
+                                        htmlFor="new-password-input"
+                                        className="mb-2 mt-4 block text-xs font-medium text-muted-foreground"
+                                    >
                                         New Password
                                     </label>
                                     <div className="relative">
                                         <input
+                                            id="new-password-input"
+                                            name="new-password"
                                             className="h-11 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                             placeholder="••••••••"
                                             type={showPassword ? "text" : "password"}

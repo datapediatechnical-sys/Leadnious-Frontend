@@ -236,6 +236,8 @@ export default function SignupPage() {
                                 
                                 <div className="flex justify-center">
                                     <input
+                                        id="otp-input"
+                                        name="otp"
                                         className="h-16 w-full max-w-[280px] rounded-2xl border-2 border-input bg-background px-4 text-center text-3xl font-bold tracking-[8px] text-foreground outline-none focus:border-blue-500 transition-all placeholder:text-muted-foreground/30"
                                         placeholder="000000"
                                         type="text"
@@ -332,10 +334,15 @@ export default function SignupPage() {
                             {/* Form */}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                    <label 
+                                        htmlFor="fullname-input"
+                                        className="mb-2 block text-xs font-medium text-muted-foreground"
+                                    >
                                         Full Name
                                     </label>
                                     <input
+                                        id="fullname-input"
+                                        name="fullname"
                                         className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                         placeholder="John Doe"
                                         type="text"
@@ -346,10 +353,15 @@ export default function SignupPage() {
                                 </div>
 
                                 <div>
-                                    <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                    <label 
+                                        htmlFor="email-input"
+                                        className="mb-2 block text-xs font-medium text-muted-foreground"
+                                    >
                                         Work Email *
                                     </label>
                                     <input
+                                        id="email-input"
+                                        name="email"
                                         className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                         placeholder="name@company.com"
                                         type="email"
@@ -362,11 +374,16 @@ export default function SignupPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                        <label 
+                                            htmlFor="password-input"
+                                            className="mb-2 block text-xs font-medium text-muted-foreground"
+                                        >
                                             Password *
                                         </label>
                                         <div className="relative">
                                             <input
+                                                id="password-input"
+                                                name="password"
                                                 className="h-11 w-full rounded-xl border border-input bg-background px-4 pr-16 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                                 placeholder="••••••••"
                                                 type={showPassword ? "text" : "password"}
@@ -386,10 +403,15 @@ export default function SignupPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                        <label 
+                                            htmlFor="confirm-password-input"
+                                            className="mb-2 block text-xs font-medium text-muted-foreground"
+                                        >
                                             Confirm Password *
                                         </label>
                                         <input
+                                            id="confirm-password-input"
+                                            name="confirm-password"
                                             className="h-11 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                             placeholder="••••••••"
                                             type={showPassword ? "text" : "password"}
@@ -402,20 +424,25 @@ export default function SignupPage() {
                                     </div>
                                 </div>
 
-                                <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                                <div className="flex items-start gap-2">
                                     <input
+                                        id="terms-checkbox"
+                                        name="terms"
                                         type="checkbox"
                                         className="h-4 w-4 mt-0.5 accent-blue-600"
                                         checked={agreedToTerms}
                                         onChange={(e) => setAgreedToTerms(e.target.checked)}
                                     />
-                                    <span>
+                                    <label 
+                                        htmlFor="terms-checkbox"
+                                        className="text-xs text-muted-foreground cursor-pointer"
+                                    >
                                         I agree to the{" "}
                                         <a href="/terms" className="text-blue-400 hover:text-blue-300">Terms of Service</a>
                                         {" "}and{" "}
                                         <a href="/privacy" className="text-blue-400 hover:text-blue-300">Privacy Policy</a>
-                                    </span>
-                                </label>
+                                    </label>
+                                </div>
 
                                 <button
                                     type="submit"

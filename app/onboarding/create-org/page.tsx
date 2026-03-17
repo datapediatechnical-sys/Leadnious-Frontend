@@ -124,10 +124,15 @@ export default function CreateOrganizationPage() {
                     <section className="mt-6 rounded-2xl border border-border bg-card/50 p-6 backdrop-blur transition-colors duration-300">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                <label 
+                                    htmlFor="org-name-input"
+                                    className="mb-2 block text-xs font-medium text-muted-foreground"
+                                >
                                     Organization Name *
                                 </label>
                                 <input
+                                    id="org-name-input"
+                                    name="org-name"
                                     className="h-11 w-full rounded-xl border border-input bg-background/50 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                     placeholder="e.g. Acme Corp"
                                     required
@@ -138,10 +143,15 @@ export default function CreateOrganizationPage() {
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                <label 
+                                    htmlFor="org-domain-input"
+                                    className="mb-2 block text-xs font-medium text-muted-foreground"
+                                >
                                     Company Website
                                 </label>
                                 <input
+                                    id="org-domain-input"
+                                    name="org-domain"
                                     className="h-11 w-full rounded-xl border border-input bg-background/50 px-4 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                     placeholder="example.com"
                                     value={domain}
@@ -151,10 +161,15 @@ export default function CreateOrganizationPage() {
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                <label 
+                                    htmlFor="org-industry-select"
+                                    className="mb-2 block text-xs font-medium text-muted-foreground"
+                                >
                                     Primary Industry
                                 </label>
                                 <select
+                                    id="org-industry-select"
+                                    name="org-industry"
                                     className="h-11 w-full rounded-xl border border-input bg-background/50 px-4 text-sm text-foreground outline-none focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                     value={industry}
                                     onChange={(e) => setIndustry(e.target.value)}
@@ -173,10 +188,15 @@ export default function CreateOrganizationPage() {
                             </div>
 
                             <div>
-                                <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                                <label 
+                                    htmlFor="org-model-select"
+                                    className="mb-2 block text-xs font-medium text-muted-foreground"
+                                >
                                     Business Model
                                 </label>
                                 <select
+                                    id="org-model-select"
+                                    name="org-model"
                                     className="h-11 w-full rounded-xl border border-input bg-background/50 px-4 text-sm text-foreground outline-none focus:border-blue-500/60 focus:ring-4 focus:ring-blue-500/10 transition-colors"
                                     value={businessModel}
                                     onChange={(e) => setBusinessModel(e.target.value)}
