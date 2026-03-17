@@ -6,21 +6,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-export default function PostEngagement() {
+import { api } from "@/lib/api";
+
+export default function PostEngagement({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [postUrl, setPostUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [platform, setPlatform] = useState<"linkedin" | "twitter">("linkedin");
 
-    const handleScrape = () => {
+    const handleScrape = async () => {
         if (!postUrl) {
             toast.error("Please enter a post URL");
             return;
         }
         
         setIsLoading(true);
-        window.open(postUrl, '_blank');
-        toast.info("Opening post page. Use the Lead Genius sidebar to extract engaged users (likes/comments).");
-        setIsLoading(false);
+        try {
+            toast.loading("Starting engagement extraction...");
+            const { data, error } = await api.post("/ingest/analysis/", {
+                post_urls: [postUrl],
+                org_id: orgId,
+                campaign_name: campaignName || `Post Engagement ${new Date().toLocaleDateString()}`
+            });
+
+            if (error) {
+                toast.error(error.detail || "Failed to start extraction");
+            } else {
+                toast.success("Engagement extraction started in background. Leads will appear in your CRM shortly.");
+            }
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

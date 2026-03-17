@@ -19,7 +19,9 @@ import {
     ShieldCheck
 } from "lucide-react";
 
-export default function StandardSearch() {
+import { api } from "@/lib/api";
+
+export default function StandardSearch({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<"search" | "link">("link");
     const [url, setUrl] = useState("");
@@ -28,26 +30,42 @@ export default function StandardSearch() {
     const [location, setLocation] = useState("");
     const [industry, setIndustry] = useState("");
     
-    const handleAction = () => {
+    const handleAction = async () => {
         setIsLoading(true);
-        if (mode === 'link') {
-            if (!url) {
-                toast.error("Please enter a LinkedIn search URL");
-                setIsLoading(false);
-                return;
+        try {
+            if (mode === 'link') {
+                if (!url) {
+                    toast.error("Please enter a LinkedIn search URL");
+                    setIsLoading(false);
+                    return;
+                }
+                
+                toast.loading("Starting LinkedIn search extraction...");
+                const { data, error } = await api.post("/ingest/analysis/", {
+                    post_urls: [url],
+                    org_id: orgId,
+                    campaign_name: campaignName || `LinkedIn Search ${new Date().toLocaleDateString()}`
+                });
+
+                if (error) {
+                    toast.error(error.detail || "Failed to start extraction");
+                } else {
+                    toast.success("LinkedIn extraction started in background. Leads will appear in your CRM shortly.");
+                }
+            } else {
+                let searchQuery = keywords;
+                if (jobTitle) searchQuery += ` "${jobTitle}"`;
+                if (location) searchQuery += ` "${location}"`;
+                if (industry) searchQuery += ` "${industry}"`;
+                const searchUrl = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchQuery)}&origin=GLOBAL_SEARCH_HEADER`;
+                window.open(searchUrl, '_blank');
+                toast.info("LinkedIn search results opened. You can copy the browser URL and paste it in 'Link' mode for automated scraping.");
             }
-            window.open(url, '_blank');
-            toast.info("Opening LinkedIn Search. Use the sidebar to sync leads.");
-        } else {
-            let searchQuery = keywords;
-            if (jobTitle) searchQuery += ` "${jobTitle}"`;
-            if (location) searchQuery += ` "${location}"`;
-            if (industry) searchQuery += ` "${industry}"`;
-            const searchUrl = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(searchQuery)}&origin=GLOBAL_SEARCH_HEADER`;
-            window.open(searchUrl, '_blank');
-            toast.info("LinkedIn search opened. Use the Lead Genius sidebar to sync leads.");
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     return (

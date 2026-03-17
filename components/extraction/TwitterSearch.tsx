@@ -6,26 +6,44 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-export default function TwitterSearch() {
+import { api } from "@/lib/api";
+
+export default function TwitterSearch({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [target, setTarget] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<"search" | "link">("link");
 
-    const handleAction = () => {
+    const handleAction = async () => {
         if (!target) {
             toast.error(`Please enter a ${mode === 'search' ? 'search query' : 'Twitter URL'}`);
             return;
         }
         
         setIsLoading(true);
-        let url = target;
-        if (mode === 'search') {
-            url = `https://twitter.com/search?q=${encodeURIComponent(target)}&f=user`;
+        try {
+            if (mode === 'link') {
+                toast.loading("Starting Twitter extraction...");
+                const { data, error } = await api.post("/ingest/analysis/", {
+                    post_urls: [target],
+                    org_id: orgId,
+                    campaign_name: campaignName || `Twitter Scraping ${new Date().toLocaleDateString()}`
+                });
+
+                if (error) {
+                    toast.error(error.detail || "Failed to start extraction");
+                } else {
+                    toast.success("Twitter extraction started in background. Leads will appear in your CRM shortly.");
+                }
+            } else {
+                const searchUrl = `https://twitter.com/search?q=${encodeURIComponent(target)}&f=user`;
+                window.open(searchUrl, '_blank');
+                toast.info("Twitter search results opened. You can copy the profile links and paste them in 'Link' mode for automated scraping.");
+            }
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
         }
-        
-        window.open(url, '_blank');
-        toast.info(mode === 'search' ? "Opening Twitter search results." : "Opening Twitter profile/list.");
-        setIsLoading(false);
     };
 
     return (

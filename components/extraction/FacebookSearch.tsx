@@ -16,34 +16,52 @@ import {
     ShieldCheck
 } from "lucide-react";
 
-export default function FacebookSearch() {
+import { api } from "@/lib/api";
+
+export default function FacebookSearch({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<"link" | "search">("link");
     const [url, setUrl] = useState("");
     const [groupName, setGroupName] = useState("");
     const [keywords, setKeywords] = useState("");
     
-    const handleAction = () => {
+    const handleAction = async () => {
         setIsLoading(true);
-        if (mode === 'link') {
-            if (!url) {
-                toast.error("Please enter a Facebook Group or Page URL");
-                setIsLoading(false);
-                return;
+        try {
+            if (mode === 'link') {
+                if (!url) {
+                    toast.error("Please enter a Facebook Group or Page URL");
+                    setIsLoading(false);
+                    return;
+                }
+                
+                toast.loading("Starting Facebook extraction...");
+                const { data, error } = await api.post("/ingest/analysis/", {
+                    post_urls: [url],
+                    org_id: orgId,
+                    campaign_name: campaignName || `Facebook Scraping ${new Date().toLocaleDateString()}`
+                });
+
+                if (error) {
+                    toast.error(error.detail || "Failed to start extraction");
+                } else {
+                    toast.success("Facebook extraction started in background. Leads will appear in your CRM shortly.");
+                }
+            } else {
+                let searchUrl = "https://www.facebook.com/search/groups/?q=";
+                if (groupName) {
+                    searchUrl += encodeURIComponent(groupName);
+                } else if (keywords) {
+                    searchUrl += encodeURIComponent(keywords);
+                }
+                window.open(searchUrl, '_blank');
+                toast.info("Facebook search results opened. You can copy group links into 'Link' mode for automated scraping.");
             }
-            window.open(url, '_blank');
-            toast.info("Opening Facebook page. Use the Lead Genius sidebar to extract members or participants.");
-        } else {
-            let searchUrl = "https://www.facebook.com/search/groups/?q=";
-            if (groupName) {
-                searchUrl += encodeURIComponent(groupName);
-            } else if (keywords) {
-                searchUrl += encodeURIComponent(keywords);
-            }
-            window.open(searchUrl, '_blank');
-            toast.info("Facebook search results opened. Extract leads from public groups.");
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     return (

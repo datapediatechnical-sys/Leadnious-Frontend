@@ -16,7 +16,9 @@ import {
     ShieldCheck
 } from "lucide-react";
 
-export default function InstagramSearch() {
+import { api } from "@/lib/api";
+
+export default function InstagramSearch({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<"link" | "search">("link");
     const [url, setUrl] = useState("");
@@ -24,25 +26,41 @@ export default function InstagramSearch() {
     const [location, setLocation] = useState("");
     const [keywords, setKeywords] = useState("");
     
-    const handleAction = () => {
+    const handleAction = async () => {
         setIsLoading(true);
-        if (mode === 'link') {
-            if (!url) {
-                toast.error("Please enter an Instagram URL");
-                setIsLoading(false);
-                return;
+        try {
+            if (mode === 'link') {
+                if (!url) {
+                    toast.error("Please enter an Instagram URL");
+                    setIsLoading(false);
+                    return;
+                }
+                
+                toast.loading("Starting Instagram extraction...");
+                const { data, error } = await api.post("/ingest/analysis/", {
+                    post_urls: [url],
+                    org_id: orgId,
+                    campaign_name: campaignName || `Instagram Scraping ${new Date().toLocaleDateString()}`
+                });
+
+                if (error) {
+                    toast.error(error.detail || "Failed to start extraction");
+                } else {
+                    toast.success("Instagram extraction started in background. Leads will appear in your CRM shortly.");
+                }
+            } else {
+                let searchQuery = keywords;
+                if (hashtags) searchQuery += ` #${hashtags.replace('#', '')}`;
+                if (location) searchQuery += ` in ${location}`;
+                const searchUrl = `https://www.google.com/search?q=site:instagram.com ${encodeURIComponent(searchQuery)}`;
+                window.open(searchUrl, '_blank');
+                toast.info("Instagram search results opened via Google. You can copy the result links and paste them in 'Link' mode for automated scraping.");
             }
-            window.open(url, '_blank');
-            toast.info("Opening Instagram page. Use the sidebar to extract profile data or post likers.");
-        } else {
-            let searchQuery = keywords;
-            if (hashtags) searchQuery += ` #${hashtags.replace('#', '')}`;
-            if (location) searchQuery += ` in ${location}`;
-            const searchUrl = `https://www.google.com/search?q=site:instagram.com ${encodeURIComponent(searchQuery)}`;
-            window.open(searchUrl, '_blank');
-            toast.info("Instagram search results opened via Google for targeted extraction.");
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     return (

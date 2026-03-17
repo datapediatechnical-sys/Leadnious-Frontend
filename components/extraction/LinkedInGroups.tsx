@@ -6,21 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-export default function LinkedInGroups() {
+import { api } from "@/lib/api";
+
+export default function LinkedInGroups({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [groupUrl, setGroupUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleScrape = () => {
+    const handleScrape = async () => {
         if (!groupUrl.includes("linkedin.com/groups/")) {
             toast.error("Please enter a valid LinkedIn Group URL");
             return;
         }
         
         setIsLoading(true);
-        // Open the URL and the sidebar will handle it
-        window.open(groupUrl, '_blank');
-        toast.info("Opening LinkedIn Group. Use the Lead Genius sidebar to start extraction.");
-        setIsLoading(false);
+        try {
+            toast.loading("Starting LinkedIn Group extraction...");
+            const { data, error } = await api.post("/ingest/analysis/", {
+                post_urls: [groupUrl],
+                org_id: orgId,
+                campaign_name: campaignName || `LinkedIn Group ${groupUrl.split('/').pop() || new Date().toLocaleDateString()}`
+            });
+
+            if (error) {
+                toast.error(error.detail || "Failed to start extraction");
+            } else {
+                toast.success("LinkedIn Group extraction started in background. Leads will appear in your CRM shortly.");
+            }
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

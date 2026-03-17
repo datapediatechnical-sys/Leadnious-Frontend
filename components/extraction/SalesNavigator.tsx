@@ -6,20 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-export default function SalesNavigator() {
+import { api } from "@/lib/api";
+
+export default function SalesNavigator({ orgId, campaignName }: { orgId: string, campaignName: string }) {
     const [url, setUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleAction = () => {
+    const handleAction = async () => {
         if (!url) {
             toast.error("Please enter a Sales Navigator list or search URL");
             return;
         }
         
         setIsLoading(true);
-        window.open(url, '_blank');
-        toast.info("Opening Sales Navigator. Use the Lead Genius extension to start scraping the list.");
-        setIsLoading(false);
+        try {
+            toast.loading("Starting Sales Navigator extraction...");
+            const { data, error } = await api.post("/ingest/analysis/", {
+                post_urls: [url],
+                org_id: orgId,
+                campaign_name: campaignName || `Sales Navigator ${new Date().toLocaleDateString()}`
+            });
+
+            if (error) {
+                toast.error(error.detail || "Failed to start extraction");
+            } else {
+                toast.success("Sales Navigator extraction started in background. Leads will appear in your CRM shortly.");
+            }
+        } catch (err) {
+            toast.error("An unexpected error occurred");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

@@ -327,19 +327,19 @@ export default function AddLeads({ onClose, onSuccess }: { onClose: () => void; 
                                     onClose();
                                 }} />
                             ) : selected === "standard-search" ? (
-                                <StandardSearch />
+                                <StandardSearch orgId={selectedOrgId!} campaignName={listName} />
                             ) : selected === "sales-navigator" ? (
-                                <SalesNavigator />
+                                <SalesNavigator orgId={selectedOrgId!} campaignName={listName} />
                             ) : selected === "linkedin-groups" ? (
-                                <LinkedInGroups />
+                                <LinkedInGroups orgId={selectedOrgId!} campaignName={listName} />
                             ) : selected === "post-engagement" ? (
-                                <PostEngagement />
+                                <PostEngagement orgId={selectedOrgId!} campaignName={listName} />
                             ) : selected === "twitter-search" ? (
-                                <TwitterSearch />
+                                <TwitterSearch orgId={selectedOrgId!} campaignName={listName} />
                             ) : selected === "instagram-search" ? (
-                                <InstagramSearch />
+                                <InstagramSearch orgId={selectedOrgId!} campaignName={listName} />
                             ) : (
-                                <FacebookSearch />
+                                <FacebookSearch orgId={selectedOrgId!} campaignName={listName} />
                             )}
                         </div>
                     )}
