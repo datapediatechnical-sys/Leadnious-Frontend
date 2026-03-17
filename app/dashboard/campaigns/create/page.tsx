@@ -33,6 +33,28 @@ function CampaignCreationContent() {
     const [isLaunching, setIsLaunching] = useState(false);
     const [leadMethod, setLeadMethod] = useState<'urls' | 'csv' | 'manual' | 'social'>('urls');
     const [socialSubMethod, setSocialSubMethod] = useState<'standard' | 'salesnav' | 'groups' | 'post' | 'twitter' | 'instagram' | 'facebook'>('standard');
+    const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+
+    // Fetch organizations on mount and auto-select
+    React.useEffect(() => {
+        async function fetchOrgs() {
+            const { data, error } = await api.get<any>("/api/organizations/");
+            if (!error && data) {
+                const activeOrgs = (data.organizations || []).filter((o: any) => o.is_active);
+                const savedOrgId = localStorage.getItem("leadgenius_selected_org_id");
+                const validSavedOrg = savedOrgId && activeOrgs.some((o: any) => o.id === savedOrgId);
+
+                if (validSavedOrg) {
+                    setSelectedOrgId(savedOrgId);
+                } else if (data.current_org_id && activeOrgs.some((o: any) => o.id === data.current_org_id)) {
+                    setSelectedOrgId(data.current_org_id);
+                } else if (activeOrgs.length > 0) {
+                    setSelectedOrgId(activeOrgs[0].id);
+                }
+            }
+        }
+        fetchOrgs();
+    }, []);
 
     const handleLaunch = async () => {
         if (!campaignName.trim()) {
@@ -300,13 +322,13 @@ function CampaignCreationContent() {
                                         </div>
                                         
                                         <div className="mt-4">
-                                            {socialSubMethod === 'standard' && <StandardSearch />}
-                                            {socialSubMethod === 'salesnav' && <SalesNavigator />}
-                                            {socialSubMethod === 'groups' && <LinkedInGroups />}
-                                            {socialSubMethod === 'post' && <PostEngagement />}
-                                            {socialSubMethod === 'twitter' && <TwitterSearch />}
-                                            {socialSubMethod === 'instagram' && <InstagramSearch />}
-                                            {socialSubMethod === 'facebook' && <FacebookSearch />}
+                                            {socialSubMethod === 'standard' && <StandardSearch orgId={selectedOrgId!} campaignName={campaignName} />}
+                                            {socialSubMethod === 'salesnav' && <SalesNavigator orgId={selectedOrgId!} campaignName={campaignName} />}
+                                            {socialSubMethod === 'groups' && <LinkedInGroups orgId={selectedOrgId!} campaignName={campaignName} />}
+                                            {socialSubMethod === 'post' && <PostEngagement orgId={selectedOrgId!} campaignName={campaignName} />}
+                                            {socialSubMethod === 'twitter' && <TwitterSearch orgId={selectedOrgId!} campaignName={campaignName} />}
+                                            {socialSubMethod === 'instagram' && <InstagramSearch orgId={selectedOrgId!} campaignName={campaignName} />}
+                                            {socialSubMethod === 'facebook' && <FacebookSearch orgId={selectedOrgId!} campaignName={campaignName} />}
                                         </div>
                                     </div>
                                 )}
