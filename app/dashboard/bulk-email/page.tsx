@@ -54,7 +54,7 @@ export default function BulkEmailPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateEmail = (email: string) => {
-    return email && email.includes('@') && email.includes('.');
+    return email && typeof email === 'string' && email.includes('@') && email.includes('.');
   };
 
   const downloadFailureReport = () => {
@@ -91,15 +91,23 @@ export default function BulkEmailPage() {
 
     Papa.parse(file, {
       header: true,
-      skipEmptyLines: true,
+      skipEmptyLines: "greedy",
+      dynamicTyping: true,
       complete: (results) => {
-        const data = results.data as any[];
+        console.log("PapaParse Results:", results);
+        
+        const data = (results.data || []) as any[];
         if (data.length === 0) {
-          toast.error("CSV file is empty");
+          toast.error("CSV file is empty or no data rows found");
           return;
         }
 
-        const headers = Object.keys(data[0]);
+        const headers = results.meta?.fields || Object.keys(data[0] || {});
+        if (headers.length === 0) {
+            toast.error("Could not detect any columns in the CSV file");
+            return;
+        }
+
         setAvailableHeaders(headers);
         setRawParsedData(data);
 
@@ -124,11 +132,11 @@ export default function BulkEmailPage() {
 
         setMappedHeaders(mappings);
         setInvalidRows(invalid);
-        toast.info(`Parsed ${data.length} rows. Please verify mapping.`);
+        toast.info(`Successfully parsed ${data.length} rows. Please verify column mapping.`);
       },
       error: (error) => {
-        toast.error("Failed to parse CSV file");
-        console.error(error);
+        toast.error("Failed to parse CSV file: " + error);
+        console.error("PapaParse Error:", error);
       }
     });
   };
@@ -138,21 +146,26 @@ export default function BulkEmailPage() {
     
     const emailKey = mappedHeaders['email'];
     if (!emailKey) {
-      toast.error("Please map the 'Email' column");
+      toast.error("Please map the 'Email' column before applying");
       return;
     }
 
     const finalLeads = rawParsedData
       .filter((_, idx) => !invalidRows.has(idx))
       .map(row => ({
-        email: row[mappedHeaders['email']] || "",
-        first_name: row[mappedHeaders['first_name']] || "",
-        company: row[mappedHeaders['company']] || "",
-        ...row // Include other fields for custom variables
+        email: String(row[mappedHeaders['email']] || "").trim(),
+        first_name: String(row[mappedHeaders['first_name']] || "").trim(),
+        company: String(row[mappedHeaders['company']] || "").trim(),
+        ...row 
       }));
 
+    if (finalLeads.length === 0) {
+        toast.error("All rows are invalid or missing email. Please check your mapping.");
+        return;
+    }
+
     setLeads(finalLeads);
-    toast.success(`Imported ${finalLeads.length} valid leads`);
+    toast.success(`Success! ${finalLeads.length} leads imported and ready.`);
   };
 
   const handleManualImport = () => {
@@ -166,14 +179,19 @@ export default function BulkEmailPage() {
       };
     }).filter(l => validateEmail(l.email));
 
+    if (newLeads.length === 0) {
+        toast.error("No valid emails found in your manual entry.");
+        return;
+    }
+
     setLeads(newLeads);
     setPreviewIndex(0);
-    toast.success(`Loaded ${newLeads.length} leads manually`);
+    toast.success(`${newLeads.length} leads added from manual list.`);
   };
 
   const handleSendBatch = async () => {
     if (leads.length === 0) {
-      toast.error("Please add at least one valid lead");
+      toast.error("Please add at least one valid lead first");
       return;
     }
 
@@ -189,10 +207,9 @@ export default function BulkEmailPage() {
       });
 
       if (response.data) {
-        // Slow down update for visual effect
         for (let i = 0; i <= 100; i += 5) {
             setProgress(prev => ({ ...prev, current: Math.floor((i / 100) * leads.length) }));
-            await new Promise(r => setTimeout(r, 50));
+            await new Promise(r => setTimeout(r, 40));
         }
         
         setProgress(prev => ({ 
@@ -204,15 +221,15 @@ export default function BulkEmailPage() {
         
         if (response.data.errors && response.data.errors.length > 0) {
             setFailedLeads(response.data.errors);
-            toast.warning(`${response.data.errors.length} rows failed during processing.`);
+            toast.warning(`${response.data.errors.length} leads failed to queue. Check the report.`);
         } else {
-            toast.success("All emails have been queued for sending!");
+            toast.success("All emails are successfully queued for sending!");
         }
       } else {
         toast.error(response.error?.detail || "Failed to initiate bulk send");
       }
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      toast.error("An unexpected server error occurred");
     } finally {
       setIsSending(false);
     }
@@ -242,7 +259,7 @@ export default function BulkEmailPage() {
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Bulk Mailer</h1>
             <p className="text-sm text-muted-foreground flex items-center gap-2">
               <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-              Revolutionize your outreach with AI-personalized batch sending.
+              Automated outreach for high-volume campaigns.
             </p>
           </div>
         </div>
@@ -257,7 +274,7 @@ export default function BulkEmailPage() {
             className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-blue-600 px-8 py-3 text-sm font-bold text-white shadow-xl shadow-blue-500/30 transition-all hover:bg-blue-500 hover:shadow-blue-500/40 disabled:opacity-50 active:scale-95"
           >
             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
-            {isSending ? `Processing...` : `Start Import & Send Emails (${leads.length})`}
+            {isSending ? `Processing...` : `Blast ${leads.length} Emails`}
           </button>
         </div>
       </div>
@@ -268,14 +285,14 @@ export default function BulkEmailPage() {
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-bold text-blue-600 flex items-center gap-2">
               {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-              {isSending ? "Processing Batch..." : "Workflow Completed"}
+              {isSending ? "Status: Queuing emails..." : "Status: Completed 🎉"}
             </h3>
             <span className="text-xs font-mono font-bold text-blue-500">
-              {progress.current} / {progress.total} Emails
+              {progress.current} / {progress.total}
             </span>
           </div>
           
-          <div className="h-2 w-full rounded-full bg-blue-200/30 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-blue-200/30 overflow-hidden shadow-inner">
             <div 
               className="h-full bg-blue-600 transition-all duration-300 ease-out"
               style={{ width: `${(progress.current / progress.total) * 100}%` }}
@@ -287,9 +304,11 @@ export default function BulkEmailPage() {
               <div className="rounded-lg bg-emerald-500/10 px-3 py-1.5 border border-emerald-500/20 text-xs font-bold text-emerald-600">
                 ✅ SUCCESS: {progress.success}
               </div>
-              <div className="rounded-lg bg-red-500/10 px-3 py-1.5 border border-red-500/20 text-xs font-bold text-red-600">
-                ❌ FAILED: {progress.failed}
-              </div>
+              {progress.failed > 0 && (
+                <div className="rounded-lg bg-red-500/10 px-3 py-1.5 border border-red-500/20 text-xs font-bold text-red-600">
+                  ❌ FAILED: {progress.failed}
+                </div>
+              )}
 
               {failedLeads.length > 0 && (
                 <div className="flex gap-2">
@@ -297,7 +316,7 @@ export default function BulkEmailPage() {
                     onClick={downloadFailureReport}
                     className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-red-500/20 hover:bg-red-500 transition-all"
                   >
-                    <Download className="h-3 w-3" /> Report
+                    <Download className="h-3 w-3" /> Get Report
                   </button>
                   <button 
                     onClick={retryFailed}
@@ -326,10 +345,10 @@ export default function BulkEmailPage() {
         
         {/* Left Column: Import (5 cols) */}
         <div className="lg:col-span-12 xl:col-span-5 space-y-6">
-          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg border-opacity-50">
             <div className="border-b border-border bg-muted/30 px-6 py-4">
               <h3 className="flex items-center gap-2 font-bold text-foreground">
-                <Upload className="h-4 w-4 text-emerald-500" /> Lead Import
+                <Upload className="h-4 w-4 text-blue-500" /> 1. Acquire Leads
               </h3>
             </div>
             
@@ -337,13 +356,13 @@ export default function BulkEmailPage() {
               <div className="mb-6 flex gap-2 rounded-xl bg-muted/50 p-1">
                 <button
                   onClick={() => setImportMode('manual')}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${importMode === 'manual' ? "bg-white text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${importMode === 'manual' ? "bg-white text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   Manual Entry
                 </button>
                 <button
                   onClick={() => setImportMode('csv')}
-                  className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${importMode === 'csv' ? "bg-white text-emerald-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${importMode === 'csv' ? "bg-white text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   CSV Upload
                 </button>
@@ -353,12 +372,11 @@ export default function BulkEmailPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label htmlFor="manual-leads" className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
-                      Format: email, first_name, company
+                      Format: email, name, company
                     </label>
                   </div>
                   <textarea
                     id="manual-leads"
-                    name="manual-leads"
                     value={manualInput}
                     onChange={(e) => setManualInput(e.target.value)}
                     placeholder="john@example.com, John, Google&#10;jane@company.com, Jane, Apple"
@@ -367,9 +385,9 @@ export default function BulkEmailPage() {
                   />
                   <button
                     onClick={handleManualImport}
-                    className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/10"
+                    className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20"
                   >
-                    Load manual list
+                    Import manual list
                   </button>
                 </div>
               ) : (
@@ -377,60 +395,63 @@ export default function BulkEmailPage() {
                   {!csvFile ? (
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border py-12 transition-all hover:border-emerald-500/50 hover:bg-emerald-50/5 group"
+                      className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border py-14 transition-all hover:border-blue-500/50 hover:bg-blue-50/5 group"
                     >
                       <input type="file" ref={fileInputRef} onChange={handleCsvUpload} accept=".csv" className="hidden" />
-                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform">
-                        <FileText className="h-8 w-8" />
+                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform">
+                        <Upload className="h-8 w-8" />
                       </div>
-                      <span className="text-sm font-bold text-foreground">Click to upload CSV</span>
-                      <span className="mt-1 text-xs text-muted-foreground">Standard headers: email, first_name, company</span>
+                      <span className="text-sm font-bold text-foreground">Click to select CSV file</span>
+                      <span className="mt-1 text-xs text-muted-foreground">Headers: email, first_name, company</span>
                     </div>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
                       {/* Mapping UI */}
-                      <div className="grid grid-cols-2 gap-2">
-                        {['email', 'first_name', 'company'].map(field => (
-                          <div key={field} className="rounded-xl border border-border bg-muted/20 p-3">
-                            <label className="mb-1 block text-[10px] font-bold text-muted-foreground uppercase">{field.replace('_', ' ')}</label>
-                            <select 
-                              value={mappedHeaders[field] || ""}
-                              onChange={(e) => setMappedHeaders(prev => ({ ...prev, [field]: e.target.value }))}
-                              className="w-full bg-transparent text-xs font-semibold outline-none"
-                            >
-                              <option value="">Select Column...</option>
-                              {availableHeaders.map(h => (
-                                <option key={h} value={h}>{h}</option>
-                              ))}
-                            </select>
-                          </div>
-                        ))}
+                      <div className="bg-muted/30 p-4 rounded-xl space-y-3">
+                        <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-2">Column Mapping</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          {['email', 'first_name', 'company'].map(field => (
+                            <div key={field} className="flex items-center gap-3">
+                              <span className="w-20 text-[10px] font-bold text-muted-foreground uppercase">{field.replace('_', ' ')}</span>
+                              <select 
+                                value={mappedHeaders[field] || ""}
+                                onChange={(e) => setMappedHeaders(prev => ({ ...prev, [field]: e.target.value }))}
+                                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500/20"
+                              >
+                                <option value="">(Ignore)</option>
+                                {availableHeaders.map(h => (
+                                  <option key={h} value={h}>{h}</option>
+                                ))}
+                              </select>
+                            </div>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Preview Table */}
                       <div className="max-h-[300px] overflow-auto rounded-xl border border-border bg-background shadow-inner">
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead className="sticky top-0 bg-muted/50 backdrop-blur-md z-10 border-b border-border">
+                        <table className="w-full text-left text-[11px] border-collapse">
+                          <thead className="sticky top-0 bg-muted z-10 border-b border-border">
                             <tr>
-                              <th className="p-2 font-bold uppercase tracking-widest text-muted-foreground scale-90">#</th>
-                              <th className="p-2 font-bold uppercase tracking-widest text-muted-foreground">Status</th>
+                              <th className="p-2 font-bold uppercase text-muted-foreground">#</th>
+                              <th className="p-2 font-bold uppercase text-muted-foreground">OK?</th>
                               {Object.values(mappedHeaders).filter(h => !!h).map(h => (
-                                <th key={h} className="p-2 font-bold uppercase tracking-widest text-muted-foreground">{h}</th>
+                                <th key={h} className="p-2 font-bold uppercase text-muted-foreground">{h}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody>
-                            {rawParsedData.slice(0, 50).map((row, idx) => (
-                              <tr key={idx} className={`border-b border-border/50 hover:bg-muted/30 transition-colors ${invalidRows.has(idx) ? "bg-red-500/5" : ""}`}>
+                            {rawParsedData.slice(0, 100).map((row, idx) => (
+                              <tr key={idx} className={`border-b border-border/30 hover:bg-muted/20 transition-colors ${invalidRows.has(idx) ? "bg-red-500/5 opacity-80" : ""}`}>
                                 <td className="p-2 text-muted-foreground font-mono">{idx + 1}</td>
                                 <td className="p-2">
                                   {invalidRows.has(idx) ? 
-                                    <AlertCircle className="h-3.5 w-3.5 text-red-500" /> : 
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                    <X className="h-3 w-3 text-red-500" /> : 
+                                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                                   }
                                 </td>
                                 {Object.values(mappedHeaders).filter(h => !!h).map(h => (
-                                  <td key={h} className={`p-2 truncate max-w-[120px] ${h === mappedHeaders['email'] && !validateEmail(row[h]) ? "text-red-500 font-bold" : ""}`}>
+                                  <td key={h} className={`p-2 truncate max-w-[120px] ${h === mappedHeaders['email'] && !validateEmail(row[h]) ? "text-red-500 line-through" : ""}`}>
                                     {row[h] || "—"}
                                   </td>
                                 ))}
@@ -440,18 +461,18 @@ export default function BulkEmailPage() {
                         </table>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 pt-2">
                         <button 
                           onClick={applyImport}
-                          className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 transition-all"
+                          className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/10"
                         >
-                          Apply Import
+                          Finish & Load {rawParsedData.length - invalidRows.size} Leads
                         </button>
                         <button 
                           onClick={resetImport}
-                          className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
+                          className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition-all"
                         >
-                          <X className="h-4 w-4" />
+                          Cancel
                         </button>
                       </div>
                     </div>
@@ -460,39 +481,43 @@ export default function BulkEmailPage() {
               )}
 
               {leads.length > 0 && !csvFile && (
-                <div className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                    <CheckCircle2 className="h-4 w-4" /> {leads.length} leads ready to blast
+                <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5 flex items-center justify-between shadow-inner">
+                  <div className="flex items-center gap-3 text-sm font-bold text-emerald-600">
+                    <CheckCircle2 className="h-5 w-5" /> {leads.length} leads loaded successfully
                   </div>
-                  <button onClick={() => setLeads([])} className="text-[10px] font-bold text-muted-foreground hover:text-red-500 underline uppercase">Reset</button>
+                  <button onClick={() => setLeads([])} className="text-[10px] font-bold text-muted-foreground hover:text-red-500 underline uppercase tracking-widest">Clear Data</button>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h4 className="mb-3 flex items-center gap-2 text-xs font-bold text-foreground">
-              <Info className="h-3.5 w-3.5 text-blue-500" /> Tips for High Deliverability
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm border-opacity-50">
+            <h4 className="mb-4 flex items-center gap-2 text-xs font-bold text-foreground">
+              <Info className="h-4 w-4 text-blue-500" /> Campaign Strategy
             </h4>
-            <ul className="space-y-3">
-              <li className="flex gap-3 text-xs text-muted-foreground">
-                <div className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-blue-500" />
-                Wait 2-3 minutes between large blasts to avoid spam filters.
-              </li>
-              <li className="flex gap-3 text-xs text-muted-foreground">
-                <div className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-blue-500" />
-                Use {'{{first_name}}'} at least once to increase open rates by 22%.
-              </li>
-            </ul>
+            <div className="space-y-4">
+               <div className="flex gap-4">
+                  <div className="mt-1 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-blue-600">1</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Ensure your subject lines are under 40 characters for best mobile visibility.</p>
+               </div>
+               <div className="flex gap-4">
+                  <div className="mt-1 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-blue-600">2</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">Always test your template with a few manual leads before starting a full blast.</p>
+               </div>
+            </div>
           </div>
         </div>
 
         {/* Right Column: Template (7 cols) */}
-        <div className="lg:col-span-12 xl:col-span-7 space-y-6">
-          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+        <div className="lg:col-span-12 xl:col-span-7 space-y-6 text-foreground">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-lg border-opacity-50">
             <div className="border-b border-border bg-muted/30 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h3 className="flex items-center gap-2 font-bold text-foreground">
-                <Type className="h-4 w-4 text-purple-500" /> Email Template
+              <h3 className="flex items-center gap-2 font-bold">
+                <Type className="h-4 w-4 text-purple-500" /> 2. Compose Template
               </h3>
               <div className="flex flex-wrap gap-2">
                 <VariableChip label="First Name" onClick={() => insertVariable('first_name')} />
@@ -502,77 +527,78 @@ export default function BulkEmailPage() {
             </div>
             
             <div className="p-6 space-y-6">
-              <div>
-                <label htmlFor="email-subject" className="mb-2 block text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-mono">Subject Line</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Subject</label>
                 <input
                   type="text"
-                  id="email-subject"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm font-semibold text-foreground focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm font-semibold focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+                  placeholder="Campaign Subject Line"
                 />
               </div>
 
-              <div>
-                <label htmlFor="email-body" className="mb-2 block text-[10px] font-bold text-muted-foreground uppercase tracking-widest font-mono">Email Body</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Message Content</label>
                 <textarea
-                  id="email-body"
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   rows={10}
-                  className="w-full rounded-xl border border-input bg-background p-4 text-sm leading-relaxed text-foreground focus:ring-2 focus:ring-blue-500/20 transition-all resize-none font-medium"
+                  className="w-full rounded-xl border border-input bg-background p-4 text-sm leading-relaxed focus:ring-2 focus:ring-blue-500/20 transition-all resize-none font-medium shadow-sm"
+                  placeholder="Hey {{first_name}}, just saw your work at {{company}}..."
                 />
               </div>
 
               {/* Preview Card */}
-              <div className="rounded-2xl border border-border bg-muted/5 p-6 relative overflow-hidden group shadow-inner">
-                <div className="absolute top-0 right-0 p-4 flex items-center gap-2">
+              <div className="rounded-2xl border border-border bg-blue-500/[0.02] p-6 relative overflow-hidden group shadow-inner">
+                <div className="absolute top-0 right-0 p-5 flex items-center gap-2">
                   {leads.length > 1 && (
-                    <div className="flex items-center gap-1 mr-4 bg-background px-2 py-1 rounded-lg border border-border">
+                    <div className="flex items-center gap-1 mr-4 bg-background px-2.5 py-1.5 rounded-xl border border-border shadow-sm">
                       <button 
                         onClick={() => setPreviewIndex(prev => Math.max(0, prev - 1))}
                         disabled={previewIndex === 0}
-                        className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors"
+                        className="p-1 rounded-lg hover:bg-muted disabled:opacity-30 transition-colors"
                       >
-                        <ChevronLeft className="h-3 w-3" />
+                        <ChevronLeft className="h-4 w-4" />
                       </button>
-                      <span className="text-[10px] font-mono font-bold px-2 text-foreground">
+                      <span className="text-[10px] font-mono font-bold px-3 text-foreground">
                         {previewIndex + 1} / {leads.length}
                       </span>
                       <button 
                         onClick={() => setPreviewIndex(prev => Math.min(leads.length - 1, prev + 1))}
                         disabled={previewIndex === leads.length - 1}
-                        className="p-1 rounded hover:bg-muted disabled:opacity-30 transition-colors"
+                        className="p-1 rounded-lg hover:bg-muted disabled:opacity-30 transition-colors"
                       >
-                        <ChevronRight className="h-3 w-3" />
+                        <ChevronRight className="h-4 w-4" />
                       </button>
                     </div>
                   )}
                   <Sparkles className="h-4 w-4 text-blue-500 opacity-20 group-hover:opacity-100 transition-opacity" />
                 </div>
                 
-                <h4 className="mb-4 text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
-                  <FileText className="h-3 w-3" /> Live Preview
+                <h4 className="mb-5 text-[10px] font-extrabold text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <div className="h-1 w-8 bg-blue-600 rounded-full" /> Personalization Preview
                 </h4>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase">To:</span>
-                    <span className="text-xs font-mono font-medium text-foreground bg-muted/50 px-2 py-0.5 rounded-md">{leads[previewIndex]?.email || "prospect@example.com"}</span>
+                
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase w-12 text-right">To:</span>
+                    <span className="text-xs font-mono font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">{leads[previewIndex]?.email || "prospect@email.com"}</span>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Subject:</span>
-                    <span className="text-sm font-bold text-foreground">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase w-12 text-right">Sub:</span>
+                    <span className="text-sm font-bold">
                       {subject
                         .replace(/\{\{company\}\}/g, leads[previewIndex]?.company || 'Your Company')
                         .replace(/\{\{first_name\}\}/g, leads[previewIndex]?.first_name || 'there')}
                     </span>
                   </div>
-                  <div className="rounded-xl bg-background p-5 border border-border/50 shadow-sm">
+                  <div className="rounded-2xl bg-white p-6 border border-border shadow-sm mt-2">
                     <p className="whitespace-pre-wrap text-sm text-foreground/80 leading-relaxed italic">
                       {body
                         .replace(/\{\{company\}\}/g, leads[previewIndex]?.company || 'your company')
-                        .replace(/\{\{first_name\}\}/g, leads[previewIndex]?.first_name || 'friend')
-                        .replace(/\{\{email\}\}/g, leads[previewIndex]?.email || "prospect@example.com")}
+                        .replace(/\{\{first_name\}\}/g, leads[previewIndex]?.first_name || 'there')
+                        .replace(/\{\{email\}\}/g, leads[previewIndex]?.email || "prospect@email.com")}
                     </p>
                   </div>
                 </div>
@@ -590,9 +616,9 @@ function VariableChip({ label, onClick }: { label: string; onClick: () => void }
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1 rounded-lg bg-blue-600/10 px-3 py-1.5 text-[10px] font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all transform active:scale-95 border border-blue-600/20"
+      className="flex items-center gap-1.5 rounded-lg bg-blue-600/10 px-3 py-1.5 text-[10px] font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all transform active:scale-95 border border-blue-600/20"
     >
-      <Hash className="h-2.5 w-2.5" /> {label}
+      <Hash className="h-3 w-3" /> {label}
     </button>
   );
 }
