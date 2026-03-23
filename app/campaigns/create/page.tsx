@@ -312,6 +312,7 @@ function CampaignCreationContent() {
                                     >
                                         {enableFollowUps ? 'Enabled' : 'Disabled'}
                                     </button>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                     <div className="rounded-2xl border border-border bg-card p-4 flex items-center gap-4 shadow-sm">
                                         <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500">
@@ -465,7 +466,6 @@ function CampaignCreationContent() {
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </main>
             </div>
