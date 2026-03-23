@@ -19,7 +19,8 @@ import {
     Filter,
     Trash2,
     Download,
-    Linkedin
+    Linkedin,
+    Ban
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -165,7 +166,24 @@ export default function CampaignDetailsPage() {
 
     const handleBulkAction = (action: 'delete' | 'export') => {
         toast.info(`Bulk ${action} for ${selectedLeads.length} items coming soon`);
-        // Implementation for API call would go here
+    };
+
+    const handleStopFollowup = async (leadId: string) => {
+        try {
+            const { error } = await api.patch(`/api/leads/${leadId}/`, {
+                status: 'stopped'
+            });
+            
+            if (!error) {
+                toast.success("Follow-ups stopped for this lead");
+                refreshData();
+            } else {
+                toast.error("Failed to stop follow-ups");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Error stopping follow-ups");
+        }
     };
 
     if (isLoading) {
@@ -405,6 +423,7 @@ export default function CampaignDetailsPage() {
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize border ${lead.status === 'qualified' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
                                                     lead.status === 'interested' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                        lead.status === 'stopped' ? 'bg-red-500/10 text-red-600 border-red-500/20' :
                                                         'bg-slate-500/10 text-slate-600 border-slate-500/20'
                                                     }`}>
                                                     {lead.status}
@@ -428,6 +447,17 @@ export default function CampaignDetailsPage() {
                                                         <ExternalLink className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
+                                                {lead.status === 'contacted' && (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                                                        onClick={() => handleStopFollowup(lead.id)}
+                                                        title="Stop Automated Follow-ups"
+                                                    >
+                                                        <Ban className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </td>
                                         </tr>
