@@ -193,7 +193,8 @@ export default function BatchLinkedInMessaging({
                         follow_ups: enableFollowUps ? followUps : []
                     };
                     await api.patch(`/api/campaigns/${campaignId}/`, {
-                        settings: updatedSettings
+                        settings: updatedSettings,
+                        status: "active" // Ensure campaign becomes active so background worker picks up follow-ups
                     });
                 }
             } catch (err) {

@@ -37,7 +37,8 @@ interface CampaignSettings {
     template?: string;
     message?: string;
     url?: string;
-    [key: string]: unknown;
+    follow_ups?: any[];
+    [key: string]: any;
 }
 
 interface Campaign {
@@ -263,17 +264,21 @@ export default function CampaignDetailsPage() {
                         </Button>
                         <Button
                             onClick={() => setShowBatchLinkedIn(true)}
-                            className="h-12 px-6 bg-[#0077b5] hover:bg-[#006396] text-white font-bold gap-2 rounded-xl shadow-lg shadow-blue-500/20"
+                            disabled={campaign.status === 'active' && (campaign.settings?.follow_ups?.length || 0) > 0}
+                            title={campaign.status === 'active' && (campaign.settings?.follow_ups?.length || 0) > 0 ? "A follow-up sequence is currently running. Stop it to start a new one." : ""}
+                            className="h-12 px-6 bg-[#0077b5] hover:bg-[#006396] text-white font-bold gap-2 rounded-xl shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Linkedin className="h-5 w-5" />
-                            Run LinkedIn Automation
+                            {campaign.status === 'active' && (campaign.settings?.follow_ups?.length || 0) > 0 ? "LinkedIn Sequence Active" : "Run LinkedIn Automation"}
                         </Button>
                         <Button
                             onClick={() => setShowBatchEmail(true)}
-                            className="h-12 px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-bold gap-2 rounded-xl shadow-lg shadow-emerald-500/20"
+                            disabled={campaign.status === 'active' && (campaign.settings?.follow_ups?.length || 0) > 0}
+                            title={campaign.status === 'active' && (campaign.settings?.follow_ups?.length || 0) > 0 ? "A follow-up sequence is currently running. Stop it to start a new one." : ""}
+                            className="h-12 px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-bold gap-2 rounded-xl shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <Mail className="h-5 w-5" />
-                            Run Email Automation
+                            {campaign.status === 'active' && (campaign.settings?.follow_ups?.length || 0) > 0 ? "Sequence Active" : "Run Email Automation"}
                         </Button>
                     </div>
                 </div>
