@@ -12,6 +12,13 @@
   .animate-marquee-vertical {
     animation: marquee-vertical var(--duration) linear infinite;
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @keyframes marquee {

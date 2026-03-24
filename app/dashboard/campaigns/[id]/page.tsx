@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
     Dialog,
     DialogContent,
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import BatchLinkedInMessaging from "@/components/linkedin/BatchLinkedInMessaging";
 import BatchEmailMessaging from "@/components/email/BatchEmailMessaging";
+import CSVImport from "@/components/extraction/CSVImport";
 
 interface CampaignSettings {
     template?: string;
@@ -51,6 +53,13 @@ interface Campaign {
     replied_count: number;
     created_at: string;
     updated_at: string;
+    scheduling?: {
+        timezone?: string;
+        working_days?: string[] | Record<string, boolean>;
+        start_time?: string;
+        end_time?: string;
+        overrideGlobal?: boolean;
+    };
     settings?: CampaignSettings;
 }
 
@@ -98,6 +107,17 @@ export default function CampaignDetailsPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [showImportDialog, setShowImportDialog] = useState(false);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    
+    // Edit Form State
+    const [editName, setEditName] = useState("");
+    const [editScheduling, setEditScheduling] = useState<any>({
+        timezone: "UTC",
+        working_days: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+        start_time: "09:00",
+        end_time: "17:00",
+        overrideGlobal: false
+    });
 
     const refreshData = () => {
         setRefreshTrigger(prev => prev + 1);
@@ -109,6 +129,14 @@ export default function CampaignDetailsPage() {
                 const { data, error } = await api.get<Campaign>(`/api/campaigns/${campaignId}/`);
                 if (data) {
                     setCampaign(data);
+                    setEditName(data.name);
+                    setEditScheduling(data.scheduling || {
+                        timezone: "UTC",
+                        working_days: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+                        start_time: "09:00",
+                        end_time: "17:00",
+                        overrideGlobal: false
+                    });
                 } else if (error) {
                     toast.error("Failed to load campaign");
                     router.push("/dashboard/campaigns");
@@ -187,6 +215,25 @@ export default function CampaignDetailsPage() {
         }
     };
 
+    const handleUpdateCampaign = async () => {
+        try {
+            const { data, error } = await api.patch<Campaign>(`/api/campaigns/${campaignId}/`, {
+                name: editName,
+                scheduling: editScheduling
+            });
+            
+            if (!error) {
+                toast.success("Campaign updated successfully");
+                setShowEditDialog(false);
+                refreshData();
+            } else {
+                toast.error(`Update failed: ${error.detail}`);
+            }
+        } catch (err) {
+            toast.error("An error occurred while updating");
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex h-full items-center justify-center">
@@ -215,6 +262,7 @@ export default function CampaignDetailsPage() {
                     />
                 </DialogContent>
             </Dialog>
+            
             {/* Header */}
             <div className="border-b border-border bg-card px-8 py-6">
                 <div className="flex items-center gap-4 mb-4">
@@ -243,15 +291,23 @@ export default function CampaignDetailsPage() {
                             </span>
                         </p>
                     </div>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="ml-auto rounded-lg font-bold"
+                        onClick={() => setShowEditDialog(true)}
+                    >
+                        Edit Settings
+                    </Button>
                 </div>
 
                 {/* Stats Row */}
                 <div className="flex items-center justify-between mt-6">
                     <div className="grid grid-cols-4 gap-4 flex-1 mr-8">
-                        <StatBox label="Total Leads" value={campaign.leads_count} icon={<Users className="h-4 w-4" />} />
-                        <StatBox label="Contacted" value={campaign.contacted_count} icon={<Mail className="h-4 w-4" />} />
-                        <StatBox label="Replied" value={campaign.replied_count} icon={<MessageSquare className="h-4 w-4" />} />
-                        <StatBox label="Reply Rate" value={`${campaign.contacted_count ? ((campaign.replied_count / campaign.contacted_count) * 100).toFixed(1) : 0}%`} icon={<CheckCircle2 className="h-4 w-4" />} />
+                        <StatBox label="Total Leads" value={campaign?.leads_count} icon={<Users className="h-4 w-4" />} />
+                        <StatBox label="Contacted" value={campaign?.contacted_count} icon={<Mail className="h-4 w-4" />} />
+                        <StatBox label="Replied" value={campaign?.replied_count} icon={<MessageSquare className="h-4 w-4" />} />
+                        <StatBox label="Reply Rate" value={`${campaign?.contacted_count ? ((campaign?.replied_count / campaign?.contacted_count) * 100).toFixed(1) : 0}%`} icon={<CheckCircle2 className="h-4 w-4" />} />
                     </div>
                     <div className="flex gap-3">
                         <Button
@@ -283,7 +339,6 @@ export default function CampaignDetailsPage() {
                     </div>
                 </div>
             </div>
-
             {/* Content Body */}
             <div className="flex-1 overflow-hidden p-8 flex flex-col gap-6">
 
@@ -294,12 +349,12 @@ export default function CampaignDetailsPage() {
                             <MessageSquare className="h-4 w-4" /> Outreach Message
                         </h3>
                         <div className="text-[10px] font-bold bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded uppercase tracking-widest">
-                            {campaign.settings?.template || 'Custom'}
+                            {campaign?.settings?.template || 'Custom'}
                         </div>
                     </div>
                     <div className="rounded-lg bg-muted/30 p-4 font-medium text-sm text-foreground leading-relaxed italic border border-border/50">
                         {(() => {
-                            const template = (campaign.settings?.message as string) || 'No message configured';
+                            const template = (campaign?.settings?.message as string) || 'No message configured';
                             const firstLead = leads[0];
                             const firstName = firstLead?.name?.split(' ')[0] || 'Jordan';
 
@@ -491,6 +546,94 @@ export default function CampaignDetailsPage() {
                 </DialogContent>
             </Dialog>
 
+            {/* Edit Settings Modal */}
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent className="sm:max-w-xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl">
+                    <div className="bg-card p-6 border-b border-border flex items-center justify-between">
+                        <div>
+                            <DialogTitle className="text-xl font-bold">Edit Campaign Settings</DialogTitle>
+                        </div>
+                    </div>
+                    
+                    <div className="p-6 space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Campaign Name</label>
+                            <Input 
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="h-11 rounded-xl bg-muted/20 border-none px-4 font-bold"
+                            />
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Custom Schedule</label>
+                                <Switch 
+                                    checked={editScheduling.overrideGlobal}
+                                    onCheckedChange={(val) => setEditScheduling({ ...editScheduling, overrideGlobal: val })}
+                                />
+                            </div>
+
+                            {editScheduling.overrideGlobal && (
+                                <div className="space-y-4 pt-2 border-t border-border/50 animate-in fade-in duration-300">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-bold text-muted-foreground ml-1">Start Time</label>
+                                            <Input 
+                                                type="time"
+                                                value={editScheduling.start_time}
+                                                onChange={(e) => setEditScheduling({ ...editScheduling, start_time: e.target.value })}
+                                                className="h-10 rounded-xl bg-muted/20 border-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-bold text-muted-foreground ml-1">End Time</label>
+                                            <Input 
+                                                type="time"
+                                                value={editScheduling.end_time}
+                                                onChange={(e) => setEditScheduling({ ...editScheduling, end_time: e.target.value })}
+                                                className="h-10 rounded-xl bg-muted/20 border-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-bold text-muted-foreground ml-1">Working Days</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map(day => (
+                                                <button
+                                                    key={day}
+                                                    onClick={() => {
+                                                        const days = [...editScheduling.working_days];
+                                                        if (days.includes(day)) {
+                                                            setEditScheduling({ ...editScheduling, working_days: days.filter(d => d !== day) });
+                                                        } else {
+                                                            setEditScheduling({ ...editScheduling, working_days: [...days, day] });
+                                                        }
+                                                    }}
+                                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition ${
+                                                        editScheduling.working_days.includes(day) 
+                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                                                        : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                                                    }`}
+                                                >
+                                                    {day.substring(0, 3)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-muted/20 flex justify-end gap-3">
+                        <Button variant="ghost" className="rounded-xl font-bold" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+                        <Button className="rounded-xl font-bold bg-blue-600 hover:bg-blue-500 px-6" onClick={handleUpdateCampaign}>Save Changes</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {/* Batch Email Modal */}
             <Dialog open={showBatchEmail} onOpenChange={setShowBatchEmail}>
                 <DialogContent className="sm:max-w-2xl p-0 overflow-hidden h-[80vh] flex flex-col">
@@ -507,8 +650,6 @@ export default function CampaignDetailsPage() {
         </div>
     );
 }
-
-import CSVImport from "@/components/extraction/CSVImport";
 
 function StatBox({ label, value, icon }: { label: string, value: React.ReactNode, icon: React.ReactNode }) {
     return (

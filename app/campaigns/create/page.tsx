@@ -32,6 +32,33 @@ function CampaignCreationContent() {
     ]);
     const [globalChannel, setGlobalChannel] = useState<'email' | 'linkedin' | 'both'>('linkedin');
 
+    // Scheduling State
+    const [timezone, setTimezone] = useState("UTC");
+    const [workingDays, setWorkingDays] = useState({
+        MONDAY: true, TUESDAY: true, WEDNESDAY: true, THURSDAY: true, FRIDAY: true, SATURDAY: false, SUNDAY: false
+    });
+    const [startTime, setStartTime] = useState("09:00");
+    const [endTime, setEndTime] = useState("18:00");
+    const [overrideGlobal, setOverrideGlobal] = useState(false);
+
+    useEffect(() => {
+        // Fetch default settings from user profile
+        const fetchDefaultSettings = async () => {
+            try {
+                const res = await api.get<any>("/api/users/me/settings");
+                if (res.data) {
+                    if (res.data.timezone) setTimezone(res.data.timezone);
+                    if (res.data.email_preferences?.working_days) {
+                        setWorkingDays(res.data.email_preferences.working_days);
+                    }
+                    if (res.data.email_preferences?.start_time) setStartTime(res.data.email_preferences.start_time);
+                    if (res.data.email_preferences?.end_time) setEndTime(res.data.email_preferences.end_time);
+                }
+            } catch (e) { console.error(e); }
+        };
+        fetchDefaultSettings();
+    }, []);
+
     const addFollowUp = () => {
         setFollowUps([...followUps, { 
             message: "", 
@@ -61,6 +88,7 @@ function CampaignCreationContent() {
         if (leadUrls.length === 0) {
             toast.error("Please add at least one prospect URL");
             setStep(3);
+            setStep(5); // Changed from 3 to 5
             return;
         }
 
@@ -75,7 +103,13 @@ function CampaignCreationContent() {
                     template: templateParam,
                     message: messageContent,
                     follow_ups: enableFollowUps ? followUps : []
-                }
+                },
+                scheduling: overrideGlobal ? {
+                    timezone: timezone,
+                    working_days: workingDays,
+                    start_time: startTime,
+                    end_time: endTime
+                } : {}
             });
 
             if (campaignRes.error) {
@@ -185,10 +219,18 @@ function CampaignCreationContent() {
                         />
                         <StepButton
                             number={4}
-                            label="Add Prospects"
+                            label="Outreach Schedule"
                             active={step === 4}
                             completed={step > 4}
                             onClick={() => setStep(4)}
+                            icon={<Clock className="h-4 w-4" />}
+                        />
+                        <StepButton
+                            number={5}
+                            label="Add Prospects"
+                            active={step === 5}
+                            completed={step > 5}
+                            onClick={() => setStep(5)}
                             icon={<UserPlus className="h-4 w-4" />}
                         />
                     </div>
@@ -493,13 +535,117 @@ function CampaignCreationContent() {
                                     >
                                         Next: Prospects
                                         <ChevronRight className="h-4 w-4" />
+                                        Next: Scheduling
+                                        <ChevronRight className="h-4 w-4" />
                                     </button>
                                 </div>
                             </div>
                         )}
 
-                        {/* Step 4: Prospects */}
+                        {/* Step 4: Scheduling */}
                         {step === 4 && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                <div className="mb-8 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
+                                            <Clock className="h-5 w-5" />
+                                        </div>
+                                        <h1 className="text-2xl font-bold text-foreground">Outreach Schedule</h1>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest text-[10px]">Override Global</span>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setOverrideGlobal(!overrideGlobal)}
+                                            className={`relative h-6 w-11 rounded-full transition-colors ${overrideGlobal ? 'bg-indigo-600' : 'bg-muted'}`}
+                                        >
+                                            <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-transform ${overrideGlobal ? 'left-6' : 'left-1'}`}></div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {!overrideGlobal ? (
+                                    <div className="mb-8 rounded-2xl border border-dashed border-border bg-indigo-500/5 p-12 text-center animate-in fade-in zoom-in-95">
+                                        <Clock className="h-10 w-10 mx-auto mb-4 text-indigo-500 opacity-40" />
+                                        <h3 className="text-sm font-bold text-foreground mb-1 uppercase tracking-widest">Global Schedule Active</h3>
+                                        <p className="text-xs text-muted-foreground max-w-xs mx-auto">This campaign will strictly follow your Account Settings window. Turn override ON for custom settings.</p>
+                                    </div>
+                                ) : (
+                                    <div className="mb-8 rounded-2xl border border-indigo-500/20 bg-card p-6 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="mb-6">
+                                            <label className="mb-2 block text-sm font-bold text-foreground">Time Zone</label>
+                                            <select
+                                                value={timezone}
+                                                onChange={(e) => setTimezone(e.target.value)}
+                                                className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm text-foreground focus:ring-1 focus:ring-indigo-500 transition-all font-medium"
+                                            >
+                                                <option value="Asia/Calcutta">Asia/Calcutta (GMT+5:30)</option>
+                                                <option value="America/New_York">America/New_York (GMT-5:00)</option>
+                                                <option value="Europe/London">Europe/London (GMT+0:00)</option>
+                                                <option value="UTC">UTC (GMT+0:00)</option>
+                                            </select>
+                                        </div>
+                                        <div className="mb-6">
+                                            <label className="mb-3 block text-sm font-bold text-foreground">Working Days</label>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                                                {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map((day) => (
+                                                    <button
+                                                        key={day}
+                                                        type="button"
+                                                        onClick={() => setWorkingDays(prev => ({ ...prev, [day]: !(prev as any)[day] }))}
+                                                        className={`py-2 rounded-lg border text-[10px] font-bold transition-all ${(workingDays as any)[day] 
+                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/10' 
+                                                            : 'bg-background text-muted-foreground border-border hover:bg-accent'}`}
+                                                    >
+                                                        {day.substring(0, 3)}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="mb-2 block text-sm font-bold text-foreground">Start Time</label>
+                                                <input
+                                                    type="time"
+                                                    value={startTime}
+                                                    onChange={(e) => setStartTime(e.target.value)}
+                                                    className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm text-foreground focus:ring-1 focus:ring-indigo-500 transition-all font-bold"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-2 block text-sm font-bold text-foreground">End Time</label>
+                                                <input
+                                                    type="time"
+                                                    value={endTime}
+                                                    onChange={(e) => setEndTime(e.target.value)}
+                                                    className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm text-foreground focus:ring-1 focus:ring-indigo-500 transition-all font-bold"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between">
+                                    <button
+                                        onClick={() => setStep(3)}
+                                        className="flex items-center gap-2 rounded-xl border border-border px-6 py-3 font-bold text-muted-foreground transition hover:bg-accent"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setStep(5)}
+                                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-bold text-white transition hover:bg-blue-500"
+                                    >
+                                        Next: Prospects
+                                        <ChevronRight className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 5: Prospects */}
+                        {step === 5 && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
                                 <div className="mb-8 flex items-center gap-3">
                                     <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
@@ -522,7 +668,7 @@ function CampaignCreationContent() {
 
                                 <div className="flex justify-between">
                                     <button
-                                        onClick={() => setStep(3)}
+                                        onClick={() => setStep(4)}
                                         className="flex items-center gap-2 rounded-xl border border-border px-6 py-3 font-bold text-muted-foreground transition hover:bg-accent"
                                     >
                                         <ChevronLeft className="h-4 w-4" />
