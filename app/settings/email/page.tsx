@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 interface EmailAccount {
     id: string;
@@ -224,16 +225,35 @@ export default function EmailSettingsPage() {
                                         </div>
                                     </div>
                                     <div className="col-span-2 flex justify-end gap-3">
-                                        <button
-                                            onClick={() => handleDeleteAccount(item.id)}
-                                            disabled={isDeleting === item.id}
-                                            className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
-                                        >
-                                            {isDeleting === item.id ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
-                                        </button>
-                                        <button className="p-3 text-slate-400 hover:text-[#0f172a] hover:bg-slate-50 rounded-xl transition-all">
-                                            <MoreHorizontal size={20} />
-                                        </button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="p-3 text-slate-400 hover:text-[#0f172a] hover:bg-slate-50 rounded-xl transition-all outline-none">
+                                                    <MoreHorizontal size={20} />
+                                                </button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-48 p-2 rounded-2xl border-slate-100 shadow-xl">
+                                                <DropdownMenuItem 
+                                                    onClick={() => router.push(`/settings/email/edit/${item.id}`)}
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all focus:bg-blue-50 focus:text-blue-600 outline-none group"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-slate-50 group-hover:bg-blue-100 transition-colors">
+                                                        <PenTool size={14} />
+                                                    </div>
+                                                    <span className="font-bold text-sm">Edit account</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator className="my-1 bg-slate-50" />
+                                                <DropdownMenuItem 
+                                                    onClick={() => handleDeleteAccount(item.id)}
+                                                    disabled={isDeleting === item.id}
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer text-rose-600 hover:bg-rose-50 transition-all focus:bg-rose-50 outline-none group"
+                                                >
+                                                    <div className="p-1.5 rounded-lg bg-rose-50 transition-colors">
+                                                        {isDeleting === item.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                    </div>
+                                                    <span className="font-bold text-sm">Remove identity</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
                                 </div>
                             ))
