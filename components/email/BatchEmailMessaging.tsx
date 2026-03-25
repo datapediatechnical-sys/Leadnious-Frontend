@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Mail, Loader2, X, CheckCircle2, ChevronLeft, ChevronRight, Edit2, Trash2, Send, AlertCircle } from "lucide-react";
+import { Mail, Loader2, X, CheckCircle2, ChevronLeft, ChevronRight, Edit2, Trash2, Send, AlertCircle, Clock } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -25,6 +25,7 @@ interface BatchEmailMessagingProps {
     leads: Lead[];
     onComplete: (results: BatchResults) => void;
     onCancel: () => void;
+    campaignId?: string;
 }
 
 interface BatchResults {
@@ -49,7 +50,8 @@ interface Template {
 export default function BatchEmailMessaging({
     leads,
     onComplete,
-    onCancel
+    onCancel,
+    campaignId
 }: BatchEmailMessagingProps) {
     const [templates, setTemplates] = useState<Template[]>([
         { id: '1', name: 'Strategy Outreach', content: "Subject: Streamlining your GTM workflows\n\nHi {{first_name}},\n\nI'm a marketing strategist with 10+ years helping marketing teams automating their GTM workflows. We have a team of GTM engineers who work with marketing teams to automate processes.\n\nRecently we helped startups in fintech, Insurance and retail sector to automate their processes.\n\nWould love to connect and explore how we can collaborate!" }
@@ -59,6 +61,7 @@ export default function BatchEmailMessaging({
 
     const [isSending, setIsSending] = useState(false);
     const [progress, setProgress] = useState<SendingProgress[]>([]);
+    const [schedulingStatus, setSchedulingStatus] = useState<{is_active: boolean, message: string, type: string, next_available?: string} | null>(null);
 
     // Add state for dynamically entering emails in the modal
     const [editedEmails, setEditedEmails] = useState<Record<string, string>>({});
@@ -78,8 +81,20 @@ export default function BatchEmailMessaging({
                 console.error("Failed to fetch templates", error);
             }
         };
+
+        const fetchStatus = async () => {
+            if (!campaignId) return;
+            try {
+                const { data } = await api.get<any>(`/api/campaigns/${campaignId}/scheduling-status/?channel=email`);
+                if (data) setSchedulingStatus(data);
+            } catch (err) {
+                console.error("Failed to fetch scheduling status", err);
+            }
+        };
+
         fetchTemplates();
-    }, []);
+        fetchStatus();
+    }, [campaignId]);
 
 
     // Derived selected template
@@ -185,9 +200,22 @@ export default function BatchEmailMessaging({
                     throw new Error(sendRes.error.detail || "Failed to send");
                 }
 
+                const finalStatus = sendRes.data.status === "sent" ? "success" : "pending";
+                const isScheduled = sendRes.data.status === "scheduled" || sendRes.data.status === "pending";
+
                 setProgress(prev => prev.map(p =>
-                    p.leadId === lead.id ? { ...p, status: "success" } : p
+                    p.leadId === lead.id ? { 
+                        ...p, 
+                        status: finalStatus as any,
+                        // We can store a custom label if needed, or just let status: "success" be the UI "Sent" 
+                        // but if it's "pending", maybe we show a different icon?
+                    } : p
                 ));
+                
+                if (isScheduled) {
+                    // It was queued/scheduled by backend
+                }
+
                 successCount++;
                 resultsArray.push({ lead_id: lead.id, success: true });
 
@@ -281,10 +309,21 @@ export default function BatchEmailMessaging({
                         </p>
                     </div>
                 </div>
-                <button onClick={onCancel} disabled={isSending} className="text-muted-foreground hover:text-foreground">
+                <button onClick={onCancel} disabled={isSending} className="text-muted-foreground hover:text-foreground transition">
                     <X size={20} />
                 </button>
             </div>
+            
+            {/* Scheduling Alert Container */}
+            {schedulingStatus && !schedulingStatus.is_active && (
+                <div className="mx-6 mt-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex gap-3 text-blue-600 dark:text-blue-400 animate-in slide-in-from-top-4 duration-300">
+                    <AlertCircle size={20} className="shrink-0" />
+                    <div className="text-sm">
+                        <p className="font-bold mb-0.5">Scheduling Note</p>
+                        <p>{schedulingStatus.message}</p>
+                    </div>
+                </div>
+            )}
 
             {/* Leads Missing Email Warning section */}
             {!isSending && progress.length === 0 && leadsWithoutEmail.length > 0 && (
@@ -367,7 +406,11 @@ export default function BatchEmailMessaging({
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                {p.status === 'pending' && <span className="text-xs font-medium text-muted-foreground">Pending</span>}
+                                                {p.status === 'pending' && (
+                                                    <span className="flex items-center gap-1.5 text-xs font-bold text-blue-500 bg-blue-500/10 px-2 py-1 rounded">
+                                                        <Clock size={12} /> Queued
+                                                    </span>
+                                                )}
                                                 {p.status === 'sending' && (
                                                     <span className="flex items-center gap-1.5 text-xs font-bold text-blue-500 bg-blue-500/10 px-2 py-1 rounded">
                                                         <Loader2 size={12} className="animate-spin" /> Sending

@@ -64,7 +64,7 @@ export default function EditEmailPage() {
         const { name, value, type } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'number' ? parseInt(value) : value
+            [name]: type === 'number' ? (value === '' ? '' : parseInt(value)) : value
         }));
     };
 
@@ -122,7 +122,7 @@ export default function EditEmailPage() {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         setIsSaving(true);
 
         try {
@@ -164,41 +164,40 @@ export default function EditEmailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-[650px] bg-white rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden animate-in fade-in zoom-in duration-300">
-                {/* Header Actions */}
-                <div className="relative flex items-center justify-between px-8 py-6">
+        <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center p-4">
+            <div className="w-full max-w-[600px] bg-white rounded-[24px] border border-slate-100 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.05)] relative my-4 flex flex-col max-h-[calc(100vh-2rem)] overflow-hidden">
+                
+                {/* Header: Title & Back */}
+                <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between sticky top-0 bg-white z-20 rounded-t-[24px]">
                     <button 
                         onClick={() => router.back()}
-                        className="flex items-center gap-1 text-slate-900 font-semibold hover:opacity-70 transition-opacity"
+                        className="flex items-center gap-1.5 text-[#1e293b] font-bold hover:opacity-70 transition-opacity"
                     >
-                        <ChevronLeft size={20} />
-                        <span>Back</span>
+                        <ChevronLeft size={20} className="stroke-[2.5px]" />
+                        <span className="text-base">Back</span>
                     </button>
-                    
+                    <h1 className="text-xl font-black text-[#0f172a] absolute left-1/2 -translate-x-1/2 whitespace-nowrap">Edit Account</h1>
                     <button 
                         onClick={() => router.push("/settings/email")}
-                        className="absolute right-8 top-1/2 -translate-y-1/2 p-2.5 bg-slate-50 rounded-2xl text-slate-400 hover:text-slate-600 transition-colors"
+                        className="h-8 w-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 transition-colors"
                     >
-                        <X size={20} />
+                        <X size={16} />
                     </button>
                 </div>
 
-                <div className="px-12 pb-12">
-                    <div className="flex flex-col items-center mb-10 text-center">
-                        <h1 className="text-[32px] font-bold text-[#0f172a] mb-6">Edit mail account</h1>
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-100">
-                                <Mail size={28} />
-                            </div>
-                            <span className="text-xl font-bold text-slate-800">{formData.email}</span>
+                {/* Main Content Area - Scrollable */}
+                <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
+                    <div className="flex flex-col items-center mb-6 text-center">
+                        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100 mb-3">
+                            <Mail size={24} />
                         </div>
+                        <span className="text-sm font-bold text-slate-500 break-all">{formData.email}</span>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-[15px] font-bold text-slate-600 ml-1">Sender Name*</label>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider">Sender Name</label>
                                 <input
                                     required
                                     type="text"
@@ -206,15 +205,15 @@ export default function EditEmailPage() {
                                     value={formData.sender_name}
                                     onChange={handleChange}
                                     placeholder="Donald Duck Official"
-                                    className="w-full px-6 py-4 bg-white border-2 border-slate-100 rounded-[22px] text-slate-900 font-semibold focus:outline-none focus:border-indigo-500 transition-all shadow-sm"
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-[#1e293b] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[15px] font-bold text-slate-600 ml-1">Update Password (Optional)</label>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider">Update Password (Optional)</label>
                                 <div className="relative">
-                                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
-                                        <ServerIcon size={18} className="opacity-50" />
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                        <ServerIcon size={14} className="opacity-40" />
                                     </div>
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -222,74 +221,70 @@ export default function EditEmailPage() {
                                         value={formData.smtp_password}
                                         onChange={handleChange}
                                         placeholder="Leave blank to keep current"
-                                        className="w-full pl-14 pr-14 py-4 bg-white border-2 border-slate-100 rounded-[22px] text-slate-900 font-semibold focus:outline-none focus:border-indigo-500 transition-all shadow-sm"
+                                        className="w-full pl-10 pr-12 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-[#1e293b] placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
                                     >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div>
+                        <div className="pt-2">
                             <button
                                 type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
-                                className="flex items-center gap-1.5 text-blue-600 font-bold text-[15px] hover:bg-blue-50/50 px-3 py-1.5 rounded-lg transition-all"
+                                className="flex items-center gap-1 text-blue-600 font-bold text-xs tracking-tight group px-1"
                             >
-                                <span>Advanced settings</span>
-                                {showAdvanced ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                <span>Advanced server settings</span>
+                                {showAdvanced ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                             </button>
 
                             {showAdvanced && (
-                                <div className="mt-4 p-5 rounded-[28px] bg-slate-50 border border-slate-100 animate-in slide-in-from-top-2 duration-400">
-                                    <div className="flex gap-1.5 p-1 bg-white rounded-xl border border-slate-100 mb-5 w-fit">
+                                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-4">
+                                    <div className="flex gap-1.5 p-1 bg-white rounded-lg border border-slate-100 w-fit">
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab("smtp")}
-                                            className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "smtp" ? "bg-blue-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                                            className={`px-4 py-1 rounded-md text-[10px] font-black tracking-wider uppercase transition-all ${activeTab === "smtp" ? "bg-blue-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
                                         >
                                             SMTP
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab("imap")}
-                                            className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === "imap" ? "bg-blue-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
+                                            className={`px-4 py-1 rounded-md text-[10px] font-black tracking-wider uppercase transition-all ${activeTab === "imap" ? "bg-blue-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
                                         >
                                             IMAP
                                         </button>
                                     </div>
 
                                     {activeTab === "smtp" ? (
-                                        <div className="space-y-4 animate-in fade-in slide-in-from-left-1 duration-200">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
-                                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-tight">SMTP Configuration</h3>
-                                            </div>
-                                            <div className="grid grid-cols-12 gap-3">
-                                                <div className="col-span-8 space-y-1.5">
-                                                    <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">Host*</label>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-12 gap-2">
+                                                <div className="col-span-9 space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">SMTP Host*</label>
                                                     <input
                                                         type="text"
                                                         name="smtp_host"
                                                         value={formData.smtp_host}
                                                         onChange={handleChange}
-                                                        placeholder="e.g. smtp.gmail.com"
-                                                        className="w-full px-4 py-3 bg-white border-2 border-slate-100 rounded-xl text-sm font-bold placeholder:text-slate-200 focus:outline-none focus:border-indigo-500 transition-all"
+                                                        placeholder="smtp.mail.com"
+                                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-blue-500 transition-all"
                                                     />
                                                 </div>
-                                                <div className="col-span-4 space-y-1.5">
+                                                <div className="col-span-3 space-y-1">
                                                     <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">Port*</label>
                                                     <input
                                                         type="number"
                                                         name="smtp_port"
                                                         value={formData.smtp_port}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-white border-2 border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500 transition-all"
+                                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-blue-500 transition-all"
                                                     />
                                                 </div>
                                             </div>
@@ -297,37 +292,33 @@ export default function EditEmailPage() {
                                                 type="button"
                                                 onClick={handleTestSmtp}
                                                 disabled={testingSmtp}
-                                                className="w-full py-3 border-2 border-blue-600 rounded-xl text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition-all text-xs flex items-center justify-center gap-2"
+                                                className="w-full h-9 border border-blue-600 rounded-lg text-blue-600 font-bold hover:bg-blue-50 transition-all text-[11px] flex items-center justify-center gap-2"
                                             >
-                                                {testingSmtp ? <Loader2 size={16} className="animate-spin" /> : <div className="flex items-center gap-2"><CheckCircle2 size={14}/><span>Test SMTP</span></div>}
+                                                {testingSmtp ? <Loader2 size={14} className="animate-spin" /> : <> <CheckCircle2 size={12}/> <span>Verify SMTP</span></>}
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="space-y-4 animate-in fade-in slide-in-from-right-1 duration-200">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <div className="w-1.5 h-4 bg-indigo-600 rounded-full" />
-                                                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-tight">IMAP Configuration</h3>
-                                            </div>
-                                            <div className="grid grid-cols-12 gap-3">
-                                                <div className="col-span-8 space-y-1.5">
-                                                    <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">Host*</label>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-12 gap-2">
+                                                <div className="col-span-9 space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">IMAP Host*</label>
                                                     <input
                                                         type="text"
                                                         name="imap_host"
                                                         value={formData.imap_host}
                                                         onChange={handleChange}
-                                                        placeholder="e.g. imap.gmail.com"
-                                                        className="w-full px-4 py-3 bg-white border-2 border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500 transition-all"
+                                                        placeholder="imap.mail.com"
+                                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-blue-500 transition-all"
                                                     />
                                                 </div>
-                                                <div className="col-span-4 space-y-1.5">
+                                                <div className="col-span-3 space-y-1">
                                                     <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">Port*</label>
                                                     <input
                                                         type="number"
                                                         name="imap_port"
                                                         value={formData.imap_port}
                                                         onChange={handleChange}
-                                                        className="w-full px-4 py-3 bg-white border-2 border-slate-100 rounded-xl text-sm font-bold focus:outline-none focus:border-indigo-500 transition-all"
+                                                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:border-blue-500 transition-all"
                                                     />
                                                 </div>
                                             </div>
@@ -335,38 +326,65 @@ export default function EditEmailPage() {
                                                 type="button"
                                                 onClick={handleTestImap}
                                                 disabled={testingImap}
-                                                className="w-full py-3 border-2 border-blue-600 rounded-xl text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition-all text-xs flex items-center justify-center gap-2"
+                                                className="w-full h-9 border border-blue-600 rounded-lg text-blue-600 font-bold hover:bg-blue-50 transition-all text-[11px] flex items-center justify-center gap-2"
                                             >
-                                                {testingImap ? <Loader2 size={16} className="animate-spin" /> : <div className="flex items-center gap-2"><CheckCircle2 size={14}/><span>Test IMAP</span></div>}
+                                                {testingImap ? <Loader2 size={14} className="animate-spin" /> : <> <CheckCircle2 size={12}/> <span>Verify IMAP</span></>}
                                             </button>
                                         </div>
                                     )}
                                 </div>
                             )}
                         </div>
-
-                        <div className="flex justify-end pt-4">
-                            <button
-                                type="submit"
-                                disabled={isSaving}
-                                className="px-12 py-4 bg-[#2563eb] rounded-[24px] text-white font-bold text-lg hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all disabled:opacity-50 flex items-center justify-center min-w-[200px]"
-                            >
-                                {isSaving ? (
-                                    <div className="flex items-center gap-3">
-                                        <Loader2 size={22} className="animate-spin" />
-                                        <span>Saving Changes...</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <Save size={20} />
-                                        <span>Save Changes</span>
-                                    </div>
-                                )}
-                            </button>
-                        </div>
                     </form>
                 </div>
+
+                {/* Footer - Sticky */}
+                <div className="px-8 py-4 border-t border-slate-50 bg-slate-50/50 rounded-b-[24px] flex justify-end items-center gap-4">
+                    <button
+                        type="button"
+                        onClick={() => router.back()}
+                        className="text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors px-2"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            const form = document.querySelector('form');
+                            if (form) form.requestSubmit();
+                        }}
+                        disabled={isSaving}
+                        className="px-8 py-2.5 bg-blue-600 rounded-xl text-white font-bold text-sm hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all disabled:opacity-50 flex items-center justify-center min-w-[140px]"
+                    >
+                        {isSaving ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 size={16} className="animate-spin" />
+                                <span>Saving...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Save size={16} />
+                                <span>Save Changes</span>
+                            </div>
+                        )}
+                    </button>
+                </div>
             </div>
+
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #cbd5e1;
+                }
+            `}</style>
         </div>
     );
 }

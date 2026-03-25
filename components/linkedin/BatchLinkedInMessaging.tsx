@@ -76,6 +76,7 @@ export default function BatchLinkedInMessaging({
     const [progress, setProgress] = useState<SendingProgress[]>([]);
     const [connectionStatus, setConnectionStatus] = useState<LinkedInStatus | null>(null);
     const [isCheckingConnection, setIsCheckingConnection] = useState(true);
+    const [schedulingStatus, setSchedulingStatus] = useState<{is_active: boolean, message: string, type: string, next_available?: string} | null>(null);
 
     // Follow-ups State
     const [enableFollowUps, setEnableFollowUps] = useState(false);
@@ -89,14 +90,19 @@ export default function BatchLinkedInMessaging({
             try {
                 const { data } = await api.get<LinkedInStatus>("/api/linkedin/status");
                 if (data) setConnectionStatus(data);
+                
+                if (campaignId) {
+                    const { data: schedData } = await api.get<any>(`/api/campaigns/${campaignId}/scheduling-status/?channel=linkedin`);
+                    if (schedData) setSchedulingStatus(schedData);
+                }
             } catch {
-                console.error("Failed to check LinkedIn status");
+                console.error("Failed to check status");
             } finally {
                 setIsCheckingConnection(false);
             }
         }
         checkStatus();
-    }, []);
+    }, [campaignId]);
 
     // Derived selected template
     const selectedTemplate = templates[selectedIndex] || templates[0];
@@ -346,6 +352,17 @@ export default function BatchLinkedInMessaging({
                     <X size={20} />
                 </button>
             </div>
+
+            {/* Scheduling Alert Container */}
+            {schedulingStatus && !schedulingStatus.is_active && (
+                <div className="mx-6 mt-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex gap-3 text-blue-600 dark:text-blue-400 animate-in slide-in-from-top-4 duration-300">
+                    <Clock size={20} className="shrink-0" />
+                    <div className="text-sm">
+                        <p className="font-bold mb-0.5">Scheduling Note</p>
+                        <p>{schedulingStatus.message}</p>
+                    </div>
+                </div>
+            )}
 
             {/* Page Content */}
             <div className="flex-1 overflow-y-auto">

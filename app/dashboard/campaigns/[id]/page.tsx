@@ -639,6 +639,7 @@ export default function CampaignDetailsPage() {
                 <DialogContent className="sm:max-w-2xl p-0 overflow-hidden h-[80vh] flex flex-col">
                     <DialogTitle className="sr-only">Batch Email Messaging</DialogTitle>
                     <BatchEmailMessaging
+                        campaignId={campaignId}
                         leads={selectedLeads.length > 0 ? selectedLeadsObjects : leads}
                         onCancel={() => setShowBatchEmail(false)}
                         onComplete={() => {

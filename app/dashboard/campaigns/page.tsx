@@ -13,7 +13,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Play, Pause, Trash2, MoreHorizontal, Loader2 } from "lucide-react";
+import { Play, Pause, Trash2, MoreHorizontal, Loader2, Activity } from "lucide-react";
 import { ApifyResultsViewer } from "./ApifyResults";
 
 interface Campaign {
@@ -142,13 +142,22 @@ export default function CampaignsPage() {
                         Manage and optimize your multi-channel outreach strategies across LinkedIn, Email, and AI Calls.
                     </p>
                 </div>
-                <Link
-                    href="/dashboard/campaigns/templates"
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-[0_4px_20px_rgba(37,99,255,0.3)] hover:bg-blue-500"
-                >
-                    <PlusIcon />
-                    Create New Campaign
-                </Link>
+                <div className="flex items-center gap-3">
+                    <Link
+                        href="/dashboard/campaigns/monitoring"
+                        className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition"
+                    >
+                        <Activity className="h-4 w-4 text-emerald-500" />
+                        Pipeline Monitor
+                    </Link>
+                    <Link
+                        href="/dashboard/campaigns/templates"
+                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-[0_4px_20px_rgba(37,99,255,0.3)] hover:bg-blue-500"
+                    >
+                        <PlusIcon />
+                        Create New Campaign
+                    </Link>
+                </div>
             </header>
 
             {/* Main Content */}
