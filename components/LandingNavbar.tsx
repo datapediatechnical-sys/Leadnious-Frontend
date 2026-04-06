@@ -12,6 +12,7 @@ import {
   Factory,
   Truck,
   Shield,
+  Users,
 } from "lucide-react";
 
 export default function LandingNavbar() {
@@ -23,7 +24,7 @@ export default function LandingNavbar() {
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
             <Zap className="h-4 w-4 text-white" fill="currentColor" />
           </div>
-          <span className="text-lg font-bold tracking-tight">LeadGenius</span>
+          <span className="text-lg font-bold tracking-tight">Leadnius</span>
         </div>
 
         {/* Links */}
@@ -174,16 +175,28 @@ export default function LandingNavbar() {
             </div>
           </div>
 
-          {/* Partners Dropdown */}
+          {/* Leadnius Community Dropdown */}
           <div className="group relative h-full flex items-center">
             <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors outline-none">
-              Partners
+              Leadnius Community
               <ChevronDown className="h-3 w-3 transition-transform duration-200 group-hover:rotate-180" />
             </button>
 
             <div className="invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 absolute top-full right-0 pt-4 transition-all duration-300 ease-out z-[60]">
               <div className="w-[300px] overflow-hidden rounded-2xl border border-border bg-white p-3 shadow-2xl shadow-purple-500/20 dark:bg-slate-950 ring-1 ring-black/5">
                 <div className="flex flex-col gap-1">
+                  <Link
+                    href="/community"
+                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gradient-to-br hover:from-purple-50 hover:to-indigo-50 dark:hover:from-purple-900/40 dark:hover:to-indigo-900/40 transition-all duration-300 group/item border border-transparent hover:border-purple-100 dark:hover:border-blue-800"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600 transition-colors group-hover/item:bg-purple-600 group-hover/item:text-white dark:bg-purple-900/50 dark:text-purple-400">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <div className="text-sm font-bold text-foreground">
+                      Community
+                    </div>
+                  </Link>
+
                   <Link
                     href="/affiliate-program"
                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40 transition-all duration-300 group/item border border-transparent hover:border-blue-100 dark:hover:border-blue-800"
