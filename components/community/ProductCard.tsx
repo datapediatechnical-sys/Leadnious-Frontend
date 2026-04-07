@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useCart } from '@/context/community/CartContext';
 import { Product } from '@/lib/community/data';
 
 interface ProductCardProps {
@@ -9,40 +10,49 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onProductClick }) => {
+    const { addToCart } = useCart();
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        addToCart(product);
+    };
+
     return (
         <div className="product-card" onClick={() => onProductClick(product.id)}>
             <div className="card-image-wrap">
-                <img src={product.image} alt={product.name} className="card-image" />
-                {product.isNew && <span className="badge-new">NEW</span>}
-                <div className="card-overlay">
-                    <span className="btn-view">View Details</span>
-                </div>
+                <img src={product.image} alt={product.name} />
+                <span className="tag-select">APPSUMO | SELECT</span>
+                {product.isNew && <span className="tag-new">New!</span>}
             </div>
             <div className="card-content">
                 <div className="card-header">
-                    <div className="card-icon">
+                    <div className="header-info">
+                        <h4 className="product-name">{product.name}</h4>
+                        <p className="product-category">in {product.category}</p>
+                    </div>
+                    <div className="app-icon">
                         <i className={product.icon}></i>
                     </div>
-                    <div className="card-title-wrap">
-                        <h3 className="card-title">{product.name}</h3>
-                        <span className="card-category">{product.category}</span>
-                    </div>
                 </div>
-                <p className="card-subtitle">{product.subtitle}</p>
+                <p className="product-desc">{product.description}</p>
                 <div className="card-footer">
-                    <div className="card-rating">
+                    <div className="rating">
                         <i className="fas fa-star"></i>
-                        <span>{product.rating}</span>
-                        <span className="review-count">({product.reviews})</span>
+                        <span>
+                            {product.rating} <span className="reviews"> {product.reviews} reviews</span>
+                        </span>
                     </div>
-                    <div className="card-price">
+                    <div className="price-info">
+                        <div className="price-wrap">
+                            <span className="price">${product.price}</span>
+                            <span className="price-type">/lifetime</span>
+                        </div>
                         <span className="original-price">${product.originalPrice}</span>
-                        <span className="current-price">${product.price}</span>
                     </div>
                 </div>
-            </div>
-            <div className="card-brand">
-                <span>LEADNIUS SELECT</span>
+                <button className="btn-add-to-cart-large" onClick={handleAddToCart}>
+                    ADD TO CART
+                </button>
             </div>
         </div>
     );

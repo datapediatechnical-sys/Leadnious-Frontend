@@ -52,7 +52,7 @@ export const products: Product[] = [
         reviews: 174,
         price: 49,
         originalPrice: 280,
-        image: "https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&w=800&q=80",
+        image: "/community/emailit_hero.png",
         icon: "fas fa-at",
         isNew: true,
         alternatives: ["Mailgun", "SendGrid", "Amazon SES"],
@@ -102,7 +102,7 @@ export const products: Product[] = [
         reviews: 852,
         price: 119,
         originalPrice: 1980,
-        image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+        image: "/community/robomotion_hero.png",
         icon: "fas fa-robot",
         isNew: false,
         alternatives: ["UiPath", "Automation Anywhere", "Blue Prism"],
@@ -148,7 +148,7 @@ export const products: Product[] = [
         reviews: 54,
         price: 59,
         originalPrice: 480,
-        image: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=800&q=80",
+        image: "/community/sendpilot_hero.png",
         icon: "fas fa-rocket",
         isNew: false,
         alternatives: ["Buffer", "Hootsuite", "Missinglettr"],
@@ -182,6 +182,52 @@ export const products: Product[] = [
             { name: "License Tier 2", price: 149, desc: "The sweet spot for growing companies.", features: ["20 Social accounts", "Unlimited Posts", "Custom branding"], popular: true },
             { name: "License Tier 3", price: 299, desc: "High volume for professional agencies.", features: ["50 Social accounts", "White Labeling", "Priority AI Queue"] },
             { name: "License Tier 4", price: 499, desc: "Enterprise-grade limits and priority.", features: ["Unlimited accounts", "API Access", "Dedicated Success Manager"] }
+        ]
+    },
+    {
+        id: "visby",
+        name: "Visby",
+        category: "Content Creation",
+        subtitle: "Hyper-fast video hosting and player with advanced analytics.",
+        description: "Hyper-fast video hosting with advanced analytics and interactive player features. Perfect for course creators and marketing teams looking for a professional video experience.",
+        rating: 4.7,
+        reviews: 312,
+        price: 79,
+        originalPrice: 990,
+        image: "/community/visby_hero.png",
+        icon: "fas fa-play",
+        isNew: true,
+        alternatives: ["Vimeo", "Wistia", "YouTube"],
+        integrations: ["LMS", "HubSpot", "Zapier"],
+        bestFor: ["Course Creators", "Marketing Teams", "Sales Professional"],
+        features: [
+            {
+                tag: "ONBOARDING",
+                title: "Host and Embed in Minutes",
+                desc: "Hyper-fast video hosting with advanced analytics and interactive player features. Perfect for course creators and marketing teams.",
+                bullets: ["Drag-and-drop uploading", "Instant embed-code generation"],
+                image: "/community/visby.png"
+            },
+            {
+                tag: "INFRASTRUCTURE",
+                title: "Global Video Infrastructure",
+                desc: "Brand your video player with your own colors and logo. Our global CDN ensures buffer-free playback for every viewer, anywhere in the world.",
+                bullets: ["Ultra-fast global CDN", "Adaptive bitrate streaming"],
+                image: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                tag: "ANALYTICS",
+                title: "Advanced Viewer Analytics",
+                desc: "Understand your audience like never before. See where they engage, where they drop off, and how they interact with your CTAs.",
+                bullets: ["Engagement heatmaps", "Conversion tracking"],
+                image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+            }
+        ],
+        tiers: [
+            { name: "License Tier 1", price: 79, desc: "Perfect for startups and side projects.", features: ["10 Videos", "Standard Analytics", "Custom Player"] },
+            { name: "License Tier 2", price: 249, desc: "The sweet spot for growing companies.", features: ["Unlimited Videos", "Advanced Analytics", "White Labeling"], popular: true },
+            { name: "License Tier 3", price: 499, desc: "High volume for professional agencies.", features: ["500GB Storage", "Interactive CTAs", "API Access"] },
+            { name: "License Tier 4", price: 899, desc: "Enterprise-grade limits and priority.", features: ["Unlimited Storage", "SSO Authentication", "Dedicated Transcoding Queue"] }
         ]
     }
 ];

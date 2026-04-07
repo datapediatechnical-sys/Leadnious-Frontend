@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/community/CartContext';
+import './Navbar.css';
 
 interface NavbarProps {
     onSearch: (query: string) => void;
@@ -16,16 +17,13 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onRegisterClick, onSoftwareCl
 
     return (
         <header className="community-navbar">
-            <div className={`navbar-container ${isDetailView ? 'navbar-container-detail' : ''}`}>
+            <div className="navbar-container">
                 <div className="navbar-left">
-                    <div className="logo-wrap">
-                        <Link href="/" className="logo-link">
-                            <h1 className="logo">
-                                <span className="logo-text-primary">Leadnius</span>
-                                <span className="logo-text-secondary">Community</span>
-                            </h1>
-                        </Link>
-                    </div>
+                    <Link href="http://localhost:3000" className="logo-wrap" style={{ textDecoration: 'none' }}>
+                        <span className="logo-text-primary">Leadnius</span>
+                        <span className="logo-text-secondary">Community</span>
+                    </Link>
+                    
                     <div className="search-bar">
                         <i className="fas fa-search"></i>
                         <input
@@ -35,36 +33,28 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onRegisterClick, onSoftwareCl
                         />
                     </div>
                 </div>
+
                 <nav className="navbar-center">
-                    <Link
-                        href="/"
-                        className="nav-link"
-                    >
-                        Home
-                    </Link>
+                    <Link href="http://localhost:3000" className="nav-link">Home</Link>
                     <button
-                        className={`nav-link ${!isDetailView ? 'active' : ''}`}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            if (onSoftwareClick) onSoftwareClick();
-                        }}
+                        className="nav-link"
+                        onClick={() => onSoftwareClick?.()}
                     >
                         Software
                     </button>
                     <span className="nav-link">New Arrival</span>
-                    <span className={`nav-link ${isDetailView ? 'active' : ''}`}>
-                        {isDetailView ? 'Software Detail' : 'Collaborate'}
-                    </span>
+                    <span className="nav-link">Collaborate</span>
                 </nav>
+
                 <div className="navbar-right">
                     <div className="cart-icon-wrap" onClick={() => setIsCartOpen(true)}>
                         <div className="cart-icon-inner">
                             <i className="fas fa-shopping-cart"></i>
                             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
                         </div>
-                        <span className="cart-text">Cart</span>
+                        <span className="cart-text">CART</span>
                     </div>
-                    <button className="btn-login" onClick={onRegisterClick}>Register Now</button>
+                    <button className="btn-register" onClick={onRegisterClick}>Register Now</button>
                 </div>
             </div>
         </header>

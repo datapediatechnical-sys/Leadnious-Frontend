@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import './SignupPage.css';
 
 interface SignupPageProps {
   onBack: () => void;
@@ -21,7 +22,6 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
     const formData = new FormData(e.currentTarget);
     const data = {
       fullName: formData.get('fullName'),
-      email: formData.get('email'),
       linkedin: formData.get('linkedin'),
       startupName: formData.get('startupName'),
       startupUrl: formData.get('startupUrl'),
@@ -31,13 +31,27 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
       betaPerk: selectedPerk
     };
 
-    // Simulate registration for demo
-    setTimeout(() => {
-      setSuccess(true);
-      setTimeout(() => {
-        onBack();
-      }, 3000);
-    }, 1500);
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          onBack();
+        }, 3000);
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Registration failed. Please try again.');
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      setErrorMessage('Could not connect to the server. Please ensure the backend is running.');
+      setIsSubmitting(false);
+    }
   };
 
   const toggleLookingFor = (value: string) => {
@@ -52,7 +66,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
         <div className="success-content">
           <div className="success-icon">✓</div>
           <h2>Welcome Aboard!</h2>
-          <p>Your application is being reviewed. We'll be in touch via LinkedIn soon.</p>
+          <p>Your application is being reviewed. We&apos;ll be in touch via LinkedIn soon.</p>
           <div className="success-loader">Redirecting to software...</div>
         </div>
       </div>
@@ -62,90 +76,152 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
   return (
     <div className="signup-page">
       <div className="signup-left">
-          <div className="constellation-overlay" />
-          <div className="constellation-content">
-              <div className="constellation-header">
-                  <h2 className="constellation-title">Start generating leads in minutes</h2>
-              </div>
-              <div className="constellation-features">
-                  <div className="feature-row">
-                      <i className="fas fa-crosshairs text-red-500"></i>
-                      <p>Extract leads from LinkedIn profiles, groups & posts</p>
-                  </div>
-                  <div className="feature-row">
-                      <i className="fas fa-envelope text-slate-400"></i>
-                      <p>Enrich with verified emails and phone numbers</p>
-                  </div>
-                  <div className="feature-row">
-                      <i className="fas fa-brain text-pink-500"></i>
-                      <p>AI-powered lead scoring and persona matching</p>
-                  </div>
-                  <div className="feature-row">
-                      <i className="fas fa-rocket text-orange-500"></i>
-                      <p>Multi-channel outreach campaigns</p>
-                  </div>
-              </div>
-          </div>
+        {/* Using the branded background image set via CSS */}
       </div>
 
+      {/* Right Column: Community Form */}
       <div className="signup-right">
         <div className="signup-nav">
-          <div className="app-logo-mini">
-              <span className="logo-text-primary">Leadnius</span>
-              <span className="logo-text-secondary">Community</span>
+          <div className="app-logo-mini" style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.1', gap: '0px', alignItems: 'flex-start', marginTop: '-2.5rem' }}>
+              <span className="gradient-text" style={{ 
+                fontSize: '1.8rem', 
+                fontWeight: 800, 
+                letterSpacing: '-1px'
+              }}>Leadnius</span>
+              <span className="gradient-text" style={{ 
+                fontSize: '1rem', 
+                fontWeight: 800, 
+                letterSpacing: '0px',
+                paddingLeft: '0.8rem',
+                marginTop: '-4px'
+              }}>Community</span>
           </div>
           <button className="btn-back" onClick={onBack}>
-            <i className="fas fa-arrow-left"></i> Back
+            <i className="fas fa-arrow-left"></i> Back to Software
           </button>
         </div>
 
         <div className="signup-form-scrollable">
           <div className="form-intro">
-            <h2 className="form-title">Apply for Early Access</h2>
-            <p className="form-subtitle">Verified early access to elite software tools.</p>
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem', letterSpacing: '-0.5px' }}>
+              Register Now
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="community-form">
-            <div className="social-login-row">
-              <button type="button" className="btn-social">
-                <i className="fab fa-google"></i> Google
-              </button>
-              <button type="button" className="btn-social">
-                <i className="fab fa-linkedin"></i> LinkedIn
-              </button>
-            </div>
-
-            <div className="form-separator">
-              <span>OR APPLY MANUALLY</span>
-            </div>
 
             <div className="form-block">
               <h4 className="block-title">IDENTITY & AUTHENTICITY</h4>
               <div className="block-row">
                  <div className="input-wrap">
                     <label>Full Name</label>
+                    <span className="input-hint">For community trust</span>
                     <input type="text" name="fullName" placeholder="e.g. John Doe" required />
                  </div>
                  <div className="input-wrap">
-                    <label>Work Email</label>
-                    <input type="email" name="email" placeholder="name@company.com" required />
+                    <label>LinkedIn Profile</label>
+                    <span className="input-hint">Verification required</span>
+                    <input type="url" name="linkedin" placeholder="https://linkedin.com/in/..." required />
                  </div>
               </div>
               <div className="block-row">
                  <div className="input-wrap">
-                    <label>LinkedIn Profile</label>
-                    <input type="url" name="linkedin" placeholder="https://linkedin.com/in/..." required />
+                    <label>Startup Name</label>
+                    <span className="input-hint">Current project</span>
+                    <input type="text" name="startupName" placeholder="e.g. Acme AI" required />
                  </div>
                  <div className="input-wrap">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required />
+                    <label>Startup URL</label>
+                    <span className="input-hint">Landing page or product</span>
+                    <input type="url" name="startupUrl" placeholder="https://..." required />
                  </div>
               </div>
             </div>
 
-            <button type="submit" className="btn-submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Processing...' : 'Complete Registration'}
+            <div className="form-block">
+              <h4 className="block-title">PRODUCT & INDUSTRY</h4>
+              <div className="block-row">
+                 <div className="input-wrap">
+                    <label>Product Stage</label>
+                    <select name="stage" required defaultValue="">
+                      <option value="" disabled>Select current stage</option>
+                      <option value="Ideation">Ideation</option>
+                      <option value="MVP/Beta">MVP / Beta</option>
+                      <option value="Launched/Scaling">Launched / Scaling</option>
+                    </select>
+                 </div>
+                 <div className="input-wrap">
+                    <label>Industry</label>
+                    <select name="industry" required defaultValue="">
+                      <option value="" disabled>Select industry</option>
+                      <option value="SaaS">SaaS</option>
+                      <option value="AI">AI</option>
+                      <option value="FinTech">FinTech</option>
+                      <option value="HealthTech">HealthTech</option>
+                      <option value="Other">Other</option>
+                    </select>
+                 </div>
+              </div>
+            </div>
+
+            <div className="form-block">
+              <h4 className="block-title">COMMUNITY ALIGNMENT</h4>
+              <div className="choice-section">
+                <label className="choice-label">What are you looking for most?</label>
+                <div className="hybrid-choice-grid">
+                   {[
+                      { val: "Beta Testers & Feedback", icon: "🚀", desc: "Get early feedback" },
+                      { val: "First Paying Customers", icon: "💰", desc: "Initial early-adopters" },
+                      { val: "Networking & Peer Collaboration", icon: "🤝", desc: "Connect with builders" }
+                   ].map(item => (
+                      <div 
+                        key={item.val}
+                        className={`hybrid-card ${selectedLookingFor.includes(item.val) ? 'selected' : ''}`}
+                        onClick={() => toggleLookingFor(item.val)}
+                      >
+                         <span className="card-emoji">{item.icon}</span>
+                         <span className="card-name">{item.val}</span>
+                      </div>
+                   ))}
+                </div>
+              </div>
+
+              <div className="choice-section">
+                <label className="choice-label">Proposed &quot;Beta Perk&quot;</label>
+                <div className="hybrid-choice-grid">
+                   {[
+                      { val: "Lifetime Access (LTD)", icon: "✨" },
+                      { val: "Extended Free Trial (e.g., 6 months)", icon: "⏳" },
+                      { val: "Significant Discount (e.g., 70% off for early birds)", icon: "🏷️" },
+                      { val: "None (Networking/Barter only)", icon: "🌐" }
+                   ].map(item => (
+                      <div 
+                        key={item.val}
+                        className={`hybrid-card ${selectedPerk === item.val ? 'selected' : ''}`}
+                        onClick={() => setSelectedPerk(item.val)}
+                      >
+                         <span className="card-emoji">{item.icon}</span>
+                         <span className="card-name">{item.val}</span>
+                      </div>
+                   ))}
+                </div>
+              </div>
+            </div>
+
+            {errorMessage && <div className="error-indicator">{errorMessage}</div>}
+
+            <div className="privacy-consent">
+              <input type="checkbox" id="consent" required />
+              <label htmlFor="consent">I verify that all information provided is accurate for verification.</label>
+            </div>
+
+            <button type="submit" className="btn-hybrid-complete" disabled={isSubmitting}>
+              {isSubmitting ? 'Processing Application...' : 'Complete Registration'}
             </button>
+            <div className="form-footer-alt">
+               <p>Already have an account? <a href="#">Log in</a></p>
+               <span className="soc2-footer">SOC2 Type II Compliant & Encrypted</span>
+            </div>
           </form>
         </div>
       </div>

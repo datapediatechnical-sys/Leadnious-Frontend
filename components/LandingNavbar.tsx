@@ -158,18 +158,6 @@ export default function LandingNavbar() {
                       Logistics
                     </div>
                   </Link>
-
-                  {/* <Link
-                    href="/enterprise/insurance"
-                    className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-linear-to-br hover:from-orange-50 hover:to-red-50 dark:hover:from-orange-900/40 dark:hover:to-red-900/40 transition-all duration-300 group/item border border-transparent hover:border-orange-100 dark:hover:border-orange-800"
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-600 transition-colors group-hover/item:bg-orange-600 group-hover/item:text-white dark:bg-orange-900/50 dark:text-orange-400">
-                      <Shield className="h-4.5 w-4.5" />
-                    </div>
-                    <div className="text-sm font-bold text-foreground">
-                      Insurance
-                    </div>
-                  </Link> */}
                 </div>
               </div>
             </div>
