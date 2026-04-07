@@ -22,6 +22,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
     const formData = new FormData(e.currentTarget);
     const data = {
       fullName: formData.get('fullName'),
+      email: formData.get('email'),
       linkedin: formData.get('linkedin'),
       startupName: formData.get('startupName'),
       startupUrl: formData.get('startupUrl'),
@@ -119,17 +120,24 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
                     <input type="text" name="fullName" placeholder="e.g. John Doe" required />
                  </div>
                  <div className="input-wrap">
+                    <label>Email Address</label>
+                    <span className="input-hint">For application updates</span>
+                    <input type="email" name="email" placeholder="e.g. name@company.com" required />
+                 </div>
+              </div>
+              <div className="block-row">
+                 <div className="input-wrap">
                     <label>LinkedIn Profile</label>
                     <span className="input-hint">Verification required</span>
                     <input type="url" name="linkedin" placeholder="https://linkedin.com/in/..." required />
                  </div>
-              </div>
-              <div className="block-row">
                  <div className="input-wrap">
                     <label>Startup Name</label>
                     <span className="input-hint">Current project</span>
                     <input type="text" name="startupName" placeholder="e.g. Acme AI" required />
                  </div>
+              </div>
+              <div className="block-row">
                  <div className="input-wrap">
                     <label>Startup URL</label>
                     <span className="input-hint">Landing page or product</span>
