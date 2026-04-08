@@ -19,7 +19,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onRegisterClick, onSoftwareCl
         <header className="community-navbar">
             <div className="navbar-container">
                 <div className="navbar-left">
-                    <Link href="http://localhost:3000" className="logo-wrap" style={{ textDecoration: 'none' }}>
+                    <Link href="/" className="logo-wrap" style={{ textDecoration: 'none' }}>
                         <span className="logo-text-primary">Leadnius</span>
                         <span className="logo-text-secondary">Community</span>
                     </Link>
@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch, onRegisterClick, onSoftwareCl
                 </div>
 
                 <nav className="navbar-center">
-                    <Link href="http://localhost:3000" className="nav-link">Home</Link>
+                    <Link href="/" className="nav-link">Home</Link>
                     <button
                         className="nav-link"
                         onClick={() => onSoftwareClick?.()}

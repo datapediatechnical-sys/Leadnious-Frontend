@@ -84,7 +84,7 @@ export default function InsuranceHero() {
                   Renewal Alert
                 </div>
                 <div className="text-[10px] text-muted-foreground">
-                  Global Logistics Policy • 15 Days Left
+                  Commercial Liability Policy • 15 Days Left
                 </div>
               </div>
             </div>
