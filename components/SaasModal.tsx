@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Zap, X, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SaasModalProps {
   isOpen: boolean;
@@ -22,12 +23,19 @@ interface SaasModalProps {
 export function SaasModal({ isOpen, onClose }: SaasModalProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const { isAuthenticated } = useAuth();
 
   const handleJoinNow = (e: React.FormEvent) => {
     e.preventDefault();
-    // Redirect to the community page with signup flag and email
+    
+    if (isAuthenticated) {
+      router.push("/community");
+      onClose();
+      return;
+    }
+
+    // Redirect to the community page
     const params = new URLSearchParams();
-    params.set("signup", "true");
     if (email) params.set("email", email);
     
     router.push(`/community?${params.toString()}`);
