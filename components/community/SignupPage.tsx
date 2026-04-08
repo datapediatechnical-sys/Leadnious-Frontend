@@ -5,9 +5,10 @@ import './SignupPage.css';
 
 interface SignupPageProps {
   onBack: () => void;
+  initialEmail?: string;
 }
 
-const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
+const SignupPage: React.FC<SignupPageProps> = ({ onBack, initialEmail }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [success, setSuccess] = useState(false);
@@ -122,7 +123,13 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
                  <div className="input-wrap">
                     <label>Email Address</label>
                     <span className="input-hint">For application updates</span>
-                    <input type="email" name="email" placeholder="e.g. name@company.com" required />
+                    <input 
+                      type="email" 
+                      name="email" 
+                      placeholder="e.g. name@company.com" 
+                      defaultValue={initialEmail} 
+                      required 
+                    />
                  </div>
               </div>
               <div className="block-row">
@@ -131,19 +138,19 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack }) => {
                     <span className="input-hint">Verification required</span>
                     <input type="url" name="linkedin" placeholder="https://linkedin.com/in/..." required />
                  </div>
-                 <div className="input-wrap">
+                  <div className="input-wrap">
                     <label>Startup Name</label>
                     <span className="input-hint">Current project</span>
                     <input type="text" name="startupName" placeholder="e.g. Acme AI" required />
-                 </div>
-              </div>
-              <div className="block-row">
-                 <div className="input-wrap">
-                    <label>Startup URL</label>
-                    <span className="input-hint">Landing page or product</span>
-                    <input type="url" name="startupUrl" placeholder="https://..." required />
-                 </div>
-              </div>
+                  </div>
+               </div>
+               <div className="block-row">
+                  <div className="input-wrap">
+                     <label>Startup URL</label>
+                     <span className="input-hint">Landing page or product</span>
+                     <input type="url" name="startupUrl" placeholder="https://..." required />
+                  </div>
+               </div>
             </div>
 
             <div className="form-block">

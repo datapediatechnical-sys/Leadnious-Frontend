@@ -12,6 +12,7 @@ import RegistrationsView from '@/components/community/RegistrationsView';
 import Cart from '@/components/community/Cart';
 import { products } from '@/lib/community/data';
 import { CartProvider } from '@/context/community/CartContext';
+import { useSearchParams } from 'next/navigation';
 import './community.css';
 
 // Font Awesome is used by community components for icons
@@ -23,13 +24,18 @@ const FontAwesomeLink = () => (
 );
 
 export default function CommunityPage() {
+  const searchParams = useSearchParams();
+  const signupParam = searchParams.get('signup');
+  const emailParam = searchParams.get('email');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('shop');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [showRegistrations, setShowRegistrations] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
+  const [showSignup, setShowSignup] = useState(signupParam === 'true');
 
   const selectedProduct = products.find(p => p.id === selectedProductId) || null;
+
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -63,7 +69,7 @@ export default function CommunityPage() {
           {showRegistrations ? (
             <RegistrationsView onBack={() => setShowRegistrations(false)} />
           ) : showSignup ? (
-            <SignupPage onBack={() => setShowSignup(false)} />
+            <SignupPage onBack={() => setShowSignup(false)} initialEmail={emailParam || undefined} />
           ) : (
             <>
               {!selectedProduct && (
